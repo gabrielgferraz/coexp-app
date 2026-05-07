@@ -63,15 +63,22 @@ export default function InsumosScreen({ navigation }) {
 
         {/* Ação buttons */}
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.actionBtn} onPress={handleEntrada} activeOpacity={0.85}>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionBtnEntrada]}
+            onPress={handleEntrada}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.actionBtnIcon}>↓</Text>
             <Text style={styles.actionBtnText}>Entrada</Text>
           </TouchableOpacity>
+
           <TouchableOpacity
-            style={[styles.actionBtn, styles.actionBtnOutline]}
+            style={[styles.actionBtn, styles.actionBtnSaida]}
             onPress={handleSaida}
-            activeOpacity={0.85}
+            activeOpacity={0.75}
           >
-            <Text style={[styles.actionBtnText, styles.actionBtnOutlineText]}>Saída</Text>
+            <Text style={[styles.actionBtnIcon, { color: colors.primary }]}>↑</Text>
+            <Text style={[styles.actionBtnText, { color: colors.primary }]}>Saída</Text>
           </TouchableOpacity>
         </View>
 
@@ -164,31 +171,38 @@ const styles = StyleSheet.create({
   },
   actionBtn: {
     flex: 1,
-    backgroundColor: colors.primary,
-    borderRadius: radius.md,
-    paddingVertical: spacing.sm + 2,
+    flexDirection: 'row',
     alignItems: 'center',
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 2,
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
-  actionBtnOutline: {
-    backgroundColor: colors.surface,
-    borderWidth: 1.5,
-    borderColor: colors.primary,
-    shadowOpacity: 0,
-    elevation: 0,
+  actionBtnEntrada: {
+    backgroundColor: '#1A3A2A',
+    borderColor: '#4CAF50',
+    shadowColor: '#4CAF50',
+  },
+  actionBtnSaida: {
+    backgroundColor: '#FFFFFF',
+    borderColor: '#1A3A2A',
+    shadowColor: '#1A3A2A',
+  },
+  actionBtnIcon: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
   },
   actionBtnText: {
-    color: colors.white,
-    fontSize: typography.sizes.sm,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  actionBtnOutlineText: {
-    color: colors.primary,
+    fontSize: typography.sizes.md,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+    color: '#FFFFFF',
   },
 
   // Table
