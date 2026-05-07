@@ -184,9 +184,9 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   actionBtnEntrada: {
-    backgroundColor: '#1A3A2A',
-    borderColor: '#4CAF50',
-    shadowColor: '#4CAF50',
+    backgroundColor: '#368dc7',
+    borderColor: '#94cbdb',
+    shadowColor: 'rgba(26, 58, 42, 0.12)',
   },
   actionBtnSaida: {
     backgroundColor: '#FFFFFF',
