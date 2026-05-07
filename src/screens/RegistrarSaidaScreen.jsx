@@ -83,7 +83,7 @@ export default function RegistrarSaidaScreen({ navigation }) {
 
             {/* Data da entrada */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Data da entrada:</Text>
+              <Text style={styles.label}>Data da saída:</Text>
 
               <TouchableOpacity
                 style={styles.dateButton}
