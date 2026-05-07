@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Image,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -28,10 +29,12 @@ export default function LoginScreen({ navigation }) {
         <View style={styles.container}>
           {/* Logo */}
           <View style={styles.logoSection}>
-            <View style={styles.logoCircle}>
-              <Text style={styles.logoText}>Logo{'\n'}COEXP</Text>
-            </View>
-          </View>
+          <Image
+            source={require('../../assets/logo.webp')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
           {/* Form */}
           <View style={styles.form}>
@@ -84,27 +87,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xl + 8,
   },
-  logoCircle: {
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    borderWidth: 2.5,
-    borderColor: colors.text,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  logoText: {
-    fontSize: typography.sizes.md,
-    fontWeight: '700',
-    color: colors.text,
-    textAlign: 'center',
-    letterSpacing: 0.5,
+  logo: {
+    width: 300,
+    height: 200,
   },
   form: {
     backgroundColor: colors.surface,
