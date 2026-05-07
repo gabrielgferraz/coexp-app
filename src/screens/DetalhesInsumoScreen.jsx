@@ -1,0 +1,168 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { colors, spacing, radius, typography } from '../theme';
+import { ScreenHeader } from '../components/UI';
+
+const MOCK_MOVIMENTACOES = [
+  { id: '1', tipo: 'Entrada', qtd: 15, data: '01/04/2026', responsavel: 'Gabriel' },
+  { id: '2', tipo: 'Saída', qtd: 20, data: '15/03/2026', responsavel: 'Ana' },
+  { id: '3', tipo: '—', qtd: null, data: null, responsavel: null },
+  { id: '4', tipo: '—', qtd: null, data: null, responsavel: null },
+];
+
+export default function DetalhesInsumoScreen({ navigation, route }) {
+  const insumo = route.params?.insumo ?? { nome: 'Insumo A', qtd: 34, unidade: 'Litros' };
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <ScreenHeader
+        title={`Detalhes do ${insumo.nome}`}
+        onBack={() => navigation.goBack()}
+      />
+
+      <ScrollView contentContainerStyle={styles.content}>
+        {/* Saldo atual */}
+        <View style={styles.saldoCard}>
+          <View>
+            <Text style={styles.saldoLabel}>Saldo atual:</Text>
+          </View>
+          <View style={styles.saldoCircle}>
+            <Text style={styles.saldoValue}>{insumo.qtd}</Text>
+          </View>
+          <View>
+            <Text style={styles.saldoUnidade}>{insumo.unidade}</Text>
+          </View>
+        </View>
+
+        {/* Movimentações */}
+        <View style={styles.tableCard}>
+          <View style={[styles.tableRow, styles.tableHeader]}>
+            <Text style={[styles.col, styles.colTipo, styles.headerText]}>Tipo</Text>
+            <Text style={[styles.col, styles.colQtd, styles.headerText]}>Qtd.</Text>
+            <Text style={[styles.col, styles.colData, styles.headerText]}>Data</Text>
+            <Text style={[styles.col, styles.colResp, styles.headerText]}>Responsável</Text>
+          </View>
+
+          {MOCK_MOVIMENTACOES.map((item, idx) => (
+            <View
+              key={item.id}
+              style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}
+            >
+              <Text
+                style={[
+                  styles.col,
+                  styles.colTipo,
+                  styles.cellText,
+                  item.tipo === 'Entrada' && styles.entradaText,
+                  item.tipo === 'Saída' && styles.saidaText,
+                ]}
+              >
+                {item.tipo}
+              </Text>
+              <Text style={[styles.col, styles.colQtd, styles.cellText]}>
+                {item.qtd ?? '—'}
+              </Text>
+              <Text style={[styles.col, styles.colData, styles.cellText]}>
+                {item.data ?? '—'}
+              </Text>
+              <Text style={[styles.col, styles.colResp, styles.cellText]}>
+                {item.responsavel ?? '—'}
+              </Text>
+            </View>
+          ))}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.md, paddingBottom: spacing.xl },
+
+  saldoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.md,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  saldoLabel: {
+    fontSize: typography.sizes.md,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  saldoCircle: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2.5,
+    borderColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background,
+  },
+  saldoValue: {
+    fontSize: typography.sizes.xl,
+    fontWeight: '700',
+    color: colors.primary,
+  },
+  saldoUnidade: {
+    fontSize: typography.sizes.md,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+
+  // Table
+  tableCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    overflow: 'hidden',
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: spacing.sm + 2,
+    paddingHorizontal: spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  rowAlt: { backgroundColor: colors.tableRowAlt },
+  tableHeader: {
+    backgroundColor: colors.primary,
+    borderBottomWidth: 0,
+  },
+  headerText: {
+    color: colors.white,
+    fontWeight: '700',
+    fontSize: typography.sizes.xs,
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  col: { fontSize: typography.sizes.sm },
+  colTipo: { flex: 1.2 },
+  colQtd: { width: 36, textAlign: 'center' },
+  colData: { flex: 1.5, textAlign: 'center' },
+  colResp: { flex: 1.2, textAlign: 'right' },
+  cellText: { color: colors.text },
+  entradaText: { color: colors.accent, fontWeight: '600' },
+  saidaText: { color: colors.danger, fontWeight: '600' },
+});
