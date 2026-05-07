@@ -17,6 +17,21 @@ const MOCK_INSUMOS = [
   { id: '3', nome: '—', qtd: null, unidade: null },
   { id: '4', nome: '—', qtd: null, unidade: null },
   { id: '5', nome: '—', qtd: null, unidade: null },
+  { id: '6', nome: '—', qtd: null, unidade: null },
+  { id: '7', nome: '—', qtd: null, unidade: null },
+  { id: '8', nome: '—', qtd: null, unidade: null },
+  { id: '9', nome: '—', qtd: null, unidade: null },
+  { id: '10', nome: '—', qtd: null, unidade: null },
+  { id: '11', nome: '—', qtd: null, unidade: null },
+  { id: '12', nome: '—', qtd: null, unidade: null },
+  { id: '13', nome: '—', qtd: null, unidade: null },
+  { id: '14', nome: '—', qtd: null, unidade: null },
+  { id: '15', nome: '—', qtd: null, unidade: null },
+  { id: '16', nome: '—', qtd: null, unidade: null },
+  { id: '17', nome: '—', qtd: null, unidade: null },
+  { id: '18', nome: '—', qtd: null, unidade: null },
+  { id: '19', nome: '—', qtd: null, unidade: null },
+  { id: '20', nome: '—', qtd: null, unidade: null },
 ];
 
 export default function InsumosScreen({ navigation }) {
