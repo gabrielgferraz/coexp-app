@@ -51,9 +51,11 @@ coexp-app/
 
 ### Instalação
 
+```
 cd coexp-app
 npm install
 npx expo start
+```
 
 Escaneie o QR Code exibido no terminal com o **Expo Go** (Android) ou com a câmera do iPhone (iOS).
 
