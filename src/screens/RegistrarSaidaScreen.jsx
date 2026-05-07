@@ -81,33 +81,35 @@ export default function RegistrarSaidaScreen({ navigation }) {
               />
             </View>
 
-            {/* Data da entrada */}
+            {/* Data da saída] */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Data da saída:</Text>
+            <Text style={styles.label}>Data da entrada:</Text>
 
-              <TouchableOpacity
-                style={styles.dateButton}
-                onPress={() => setShowPicker(true)}
-              >
-                <Text style={styles.dateButtonText}>
-                  {data.toLocaleDateString('pt-BR')}
-                </Text>
-                <Text style={styles.calendarIcon}>📅</Text>
-              </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowPicker(true)}
+              activeOpacity={0.75}
+            >
+              <Text style={styles.calendarIcon}>📅</Text>
+              <Text style={styles.dateButtonText}>
+                {data.toLocaleDateString('pt-BR')}
+              </Text>
+              <Text style={styles.dateChevron}>›</Text>
+            </TouchableOpacity>
 
-              {showPicker && (
-                <DateTimePicker
-                  value={data}
-                  mode="date"
-                  display="default"
-                  locale="pt-BR"
-                  onChange={(event, selectedDate) => {
-                    setShowPicker(false);
-                    if (selectedDate) setData(selectedDate);
-                  }}
-                />
-              )}
-            </View>
+            {showPicker && (
+              <DateTimePicker
+                value={data}
+                mode="date"
+                display="default"
+                locale="pt-BR"
+                onChange={(event, selectedDate) => {
+                  setShowPicker(false);
+                  if (selectedDate) setData(selectedDate);
+                }}
+              />
+            )}
+          </View>
 
             <View style={styles.submitWrapper}>
               <PrimaryButton title="Confirmar saída" onPress={handleConfirmar} />
@@ -143,25 +145,35 @@ const styles = StyleSheet.create({
     marginBottom: spacing.xs,
     letterSpacing: 0.2,
   },
-  dateRow: {
+  dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-  },
-  dateSep: {
-    fontSize: typography.sizes.lg,
-    color: colors.textSecondary,
+    backgroundColor: colors.surface,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 4,
     marginBottom: spacing.md,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 6,
+    elevation: 3,
   },
-  calendarBtn: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
+  calendarIcon: {
+    fontSize: 20,
+    marginRight: spacing.sm,
   },
-  calendarIcon: { fontSize: 20 },
-  submitWrapper: {
-    marginTop: spacing.md,
+  dateButtonText: {
+    flex: 1,
+    fontSize: typography.sizes.md,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  dateChevron: {
+    fontSize: 22,
+    color: colors.primary,
+    fontWeight: '300',
   },
 });
