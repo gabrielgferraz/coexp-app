@@ -56,11 +56,6 @@ export default function InsumosScreen({ navigation }) {
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        {/* Movimentação dropdown */}
-        <View style={styles.section}>
-          <SelectField value={movimentacao} placeholder="Registrar nova movimentação" />
-        </View>
-
         {/* Ação buttons */}
         <View style={styles.actionRow}>
           <TouchableOpacity
@@ -69,7 +64,7 @@ export default function InsumosScreen({ navigation }) {
             activeOpacity={0.75}
           >
             <Text style={styles.actionBtnIcon}>↓</Text>
-            <Text style={styles.actionBtnText}>Entrada</Text>
+            <Text style={styles.actionBtnText}>Registrar Entrada</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -78,7 +73,7 @@ export default function InsumosScreen({ navigation }) {
             activeOpacity={0.75}
           >
             <Text style={[styles.actionBtnIcon, { color: colors.primary }]}>↑</Text>
-            <Text style={[styles.actionBtnText, { color: colors.primary }]}>Saída</Text>
+            <Text style={[styles.actionBtnText, { color: colors.primary }]}>Registrar Saída</Text>
           </TouchableOpacity>
         </View>
 
