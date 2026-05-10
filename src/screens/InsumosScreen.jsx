@@ -38,7 +38,9 @@ const MOCK_INSUMOS = [
 export default function InsumosScreen({ navigation }) {
   const [search, setSearch] = useState('');
 
-  const insumosFiltrados = MOCK_INSUMOS.filter((item) =>
+  const insumosFiltrados = MOCK_INSUMOS.filter(
+  (item) =>
+    item.nome !== '—' &&
     item.nome.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -47,6 +49,7 @@ export default function InsumosScreen({ navigation }) {
   const handleEntrada = () => navigation.navigate('RegistrarEntrada');
   const handleSaida = () => navigation.navigate('RegistrarSaida');
   const handleGestao = () => navigation.navigate('GestaoAcessos');
+  const handleDashboard = () => navigation.navigate('Dashboard');
   const handleLogout = () => navigation.navigate('Login');
 
   return (
@@ -57,6 +60,9 @@ export default function InsumosScreen({ navigation }) {
         <View style={styles.headerActions}>
           <TouchableOpacity onPress={handleGestao} style={styles.iconBtn}>
             <IconUserCircle size={20} color="#000000" strokeWidth={1.5} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleDashboard} style={styles.gestaoBtn}>
+            <Text style={styles.gestaoBtnText}>📊</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={handleLogout} style={styles.iconBtn}>
             <IconLogout size={20} color="#000000" strokeWidth={1.5} />
@@ -178,7 +184,7 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: colors.primaryLight,
+    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
   },

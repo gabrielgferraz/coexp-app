@@ -4,21 +4,26 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { ScreenHeader } from '../components/UI';
 
-const MOCK_MOVIMENTACOES = [
-  { id: '1', tipo: 'Entrada', qtd: 15, data: '01/04/2026', responsavel: 'Gabriel' },
-  { id: '2', tipo: 'Saída', qtd: 20, data: '15/03/2026', responsavel: 'Ana' },
-  { id: '3', tipo: '—', qtd: null, data: null, responsavel: null },
-  { id: '4', tipo: '—', qtd: null, data: null, responsavel: null },
+export const TODAS_MOVIMENTACOES = [
+  { tipo: 'Entrada', insumo: 'Insumo A', qtd: 15, data: '01/04/2026', responsavel: 'Gabriel' },
+  { tipo: 'Saída',   insumo: 'Insumo B', qtd: 3,  data: '28/03/2026', responsavel: 'Ana' },
+  { tipo: 'Entrada', insumo: 'Insumo C', qtd: 10, data: '25/03/2026', responsavel: 'Gabriel' },
+  { tipo: 'Saída',   insumo: 'Insumo A', qtd: 20, data: '15/03/2026', responsavel: 'Ana' },
+  { tipo: 'Entrada', insumo: 'Insumo E', qtd: 18, data: '10/03/2026', responsavel: 'Gabriel' },
 ];
 
 export default function DetalhesInsumoScreen({ navigation, route }) {
   const insumo = route.params?.insumo ?? { nome: 'Insumo A', qtd: 34, unidade: 'Litros' };
+
+  // Filtra somente as movimentações deste insumo
+  const movimentacoes = TODAS_MOVIMENTACOES.filter(
+    (m) => m.insumo === insumo.nome
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -30,53 +35,47 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Saldo atual */}
         <View style={styles.saldoCard}>
-          <View>
-            <Text style={styles.saldoLabel}>Saldo atual:</Text>
-          </View>
+          <Text style={styles.saldoLabel}>Saldo atual:</Text>
           <View style={styles.saldoCircle}>
-            <Text style={styles.saldoValue}>{insumo.qtd}</Text>
+            <Text style={styles.saldoValue}>{insumo.qtd ?? '—'}</Text>
           </View>
-          <View>
-            <Text style={styles.saldoUnidade}>{insumo.unidade}</Text>
-          </View>
+          <Text style={styles.saldoUnidade}>{insumo.unidade ?? '—'}</Text>
         </View>
 
-        {/* Movimentações */}
+        {/* Movimentações filtradas */}
         <View style={styles.tableCard}>
           <View style={[styles.tableRow, styles.tableHeader]}>
             <Text style={[styles.col, styles.colTipo, styles.headerText]}>Tipo</Text>
-            <Text style={[styles.col, styles.colQtd, styles.headerText]}>Qtd.</Text>
-            <Text style={[styles.col, styles.colData, styles.headerText]}>Data</Text>
-            <Text style={[styles.col, styles.colResp, styles.headerText]}>Responsável</Text>
+            <Text style={[styles.col, styles.colQtd,  styles.headerText]}>Qtd.</Text>
+            <Text style={[styles.col, styles.colData,  styles.headerText]}>Data</Text>
+            <Text style={[styles.col, styles.colResp,  styles.headerText]}>Responsável</Text>
           </View>
 
-          {MOCK_MOVIMENTACOES.map((item, idx) => (
-            <View
-              key={item.id}
-              style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}
-            >
-              <Text
-                style={[
-                  styles.col,
-                  styles.colTipo,
-                  styles.cellText,
-                  item.tipo === 'Entrada' && styles.entradaText,
-                  item.tipo === 'Saída' && styles.saidaText,
-                ]}
+          {movimentacoes.length > 0 ? (
+            movimentacoes.map((item, idx) => (
+              <View
+                key={item.id}
+                style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}
               >
-                {item.tipo}
-              </Text>
-              <Text style={[styles.col, styles.colQtd, styles.cellText]}>
-                {item.qtd ?? '—'}
-              </Text>
-              <Text style={[styles.col, styles.colData, styles.cellText]}>
-                {item.data ?? '—'}
-              </Text>
-              <Text style={[styles.col, styles.colResp, styles.cellText]}>
-                {item.responsavel ?? '—'}
-              </Text>
+                <Text
+                  style={[
+                    styles.col, styles.colTipo, styles.cellText,
+                    item.tipo === 'Entrada' && styles.entradaText,
+                    item.tipo === 'Saída'   && styles.saidaText,
+                  ]}
+                >
+                  {item.tipo}
+                </Text>
+                <Text style={[styles.col, styles.colQtd,  styles.cellText]}>{item.qtd}</Text>
+                <Text style={[styles.col, styles.colData,  styles.cellText]}>{item.data}</Text>
+                <Text style={[styles.col, styles.colResp,  styles.cellText]}>{item.responsavel}</Text>
+              </View>
+            ))
+          ) : (
+            <View style={styles.emptyRow}>
+              <Text style={styles.emptyText}>Nenhuma movimentação registrada.</Text>
             </View>
-          ))}
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -145,11 +144,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
-  rowAlt: { backgroundColor: colors.tableRowAlt },
-  tableHeader: {
-    backgroundColor: colors.primary,
-    borderBottomWidth: 0,
-  },
+  rowAlt:      { backgroundColor: colors.tableRowAlt },
+  tableHeader: { backgroundColor: colors.primary, borderBottomWidth: 0 },
   headerText: {
     color: colors.white,
     fontWeight: '700',
@@ -157,12 +153,19 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
-  col: { fontSize: typography.sizes.sm },
-  colTipo: { flex: 1.2 },
-  colQtd: { width: 36, textAlign: 'center' },
-  colData: { flex: 1.5, textAlign: 'center' },
-  colResp: { flex: 1.2, textAlign: 'right' },
+  col:      { fontSize: typography.sizes.sm },
+  colTipo:  { flex: 1.2 },
+  colQtd:   { width: 36, textAlign: 'center' },
+  colData:  { flex: 1.5, textAlign: 'center' },
+  colResp:  { flex: 1.2, textAlign: 'right' },
   cellText: { color: colors.text },
-  entradaText: { color: colors.accent, fontWeight: '600' },
-  saidaText: { color: colors.danger, fontWeight: '600' },
+  entradaText: { color: colors.accent,  fontWeight: '600' },
+  saidaText:   { color: colors.danger,  fontWeight: '600' },
+
+  emptyRow: { padding: spacing.lg, alignItems: 'center' },
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
+    fontStyle: 'italic',
+  },
 });

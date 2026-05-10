@@ -9,6 +9,7 @@ import DetalhesInsumoScreen from './src/screens/DetalhesInsumoScreen';
 import RegistrarEntradaScreen from './src/screens/RegistrarEntradaScreen';
 import RegistrarSaidaScreen from './src/screens/RegistrarSaidaScreen';
 import GestaoAcessosScreen from './src/screens/GestaoAcessosScreen';
+import DashboardScreen from './src/screens/DashboardScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
@@ -28,6 +29,7 @@ export default function App() {
           <Stack.Screen name="RegistrarEntrada" component={RegistrarEntradaScreen} />
           <Stack.Screen name="RegistrarSaida" component={RegistrarSaidaScreen} />
           <Stack.Screen name="GestaoAcessos" component={GestaoAcessosScreen} />
+          <Stack.Screen name="Dashboard" component={DashboardScreen} />
         </Stack.Navigator>
         </NavigationContainer>
     </SafeAreaProvider>  
