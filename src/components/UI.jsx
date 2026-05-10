@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   StyleSheet,
   ActivityIndicator,
 } from 'react-native';
+import { IconSearch } from '@tabler/icons-react-native';
 import { colors, radius, spacing, typography } from '../theme';
 
 // ─── Header ───────────────────────────────────────────────────────────────────
@@ -33,7 +34,7 @@ export function ScreenHeader({ title, onBack, rightAction }) {
 }
 
 // ─── Search Bar ───────────────────────────────────────────────────────────────
-export function SearchBar({ value, onChangeText, placeholder = 'pesquisar' }) {
+export function SearchBar({ value, onChangeText, placeholder = 'Buscar insumo...' }) {
   return (
     <View style={styles.searchContainer}>
       <TextInput
@@ -43,15 +44,15 @@ export function SearchBar({ value, onChangeText, placeholder = 'pesquisar' }) {
         placeholder={placeholder}
         placeholderTextColor={colors.textPlaceholder}
       />
-      <Text style={styles.searchIcon}>🔍</Text>
+      <IconSearch size={18} color={colors.textSecondary} strokeWidth={1.5} />
     </View>
   );
 }
 
 // ─── Input Field ──────────────────────────────────────────────────────────────
-export function InputField({ label, placeholder, value, onChangeText, keyboardType, icon }) {
+export function InputField({ label, placeholder, value, onChangeText, keyboardType, secureTextEntry, icon }) {
   return (
-    <View style={styles.inputWrapper}>
+    <View>
       {label ? <Text style={styles.inputLabel}>{label}</Text> : null}
       <View style={styles.inputRow}>
         <TextInput
@@ -61,8 +62,9 @@ export function InputField({ label, placeholder, value, onChangeText, keyboardTy
           value={value}
           onChangeText={onChangeText}
           keyboardType={keyboardType || 'default'}
+          secureTextEntry={secureTextEntry || false}
         />
-        {icon ? <Text style={styles.inputIcon}>{icon}</Text> : null}
+        {icon ? <View style={styles.inputIcon}>{icon}</View> : null}
       </View>
     </View>
   );
@@ -71,7 +73,7 @@ export function InputField({ label, placeholder, value, onChangeText, keyboardTy
 // ─── Number Input ─────────────────────────────────────────────────────────────
 export function NumberInput({ label, value, onIncrement, onDecrement }) {
   return (
-    <View style={styles.inputWrapper}>
+    <View>
       {label ? <Text style={styles.inputLabel}>{label}</Text> : null}
       <View style={styles.numberRow}>
         <Text style={styles.numberValue}>{value}</Text>
@@ -110,17 +112,57 @@ export function OutlineButton({ title, onPress }) {
   );
 }
 
-// ─── Select / Dropdown (simulated) ───────────────────────────────────────────
-export function SelectField({ label, value, placeholder }) {
+// ─── Select Field ─────────────────────────────────────────────────────────────
+export function SelectField({ label, value, onChange, options = [], placeholder }) {
+  const [open, setOpen] = useState(false);
+  const [hoveredOpt, setHoveredOpt] = useState(null);
+
   return (
-    <View style={styles.inputWrapper}>
+    <View>
       {label ? <Text style={styles.inputLabel}>{label}</Text> : null}
-      <View style={styles.selectRow}>
+
+      <TouchableOpacity
+        style={styles.selectRow}
+        onPress={() => setOpen(!open)}
+        activeOpacity={0.7}
+      >
         <Text style={value ? styles.selectValue : styles.selectPlaceholder}>
           {value || placeholder}
         </Text>
-        <Text style={styles.selectChevron}>▾</Text>
-      </View>
+        <Text style={styles.selectChevron}>{open ? '▴' : '▾'}</Text>
+      </TouchableOpacity>
+
+      {open && (
+        <View style={styles.selectDropdown}>
+          {options.map((opt) => (
+            <TouchableOpacity
+              key={opt}
+              style={[
+                styles.selectOption,
+                value === opt && styles.selectOptionActive,
+                hoveredOpt === opt && value !== opt && styles.selectOptionHovered,
+              ]}
+              onPress={() => {
+                onChange(opt);
+                setOpen(false);
+              }}
+              onPressIn={() => setHoveredOpt(opt)}
+              onPressOut={() => setHoveredOpt(null)}
+              activeOpacity={1}
+            >
+              <Text
+                style={[
+                  styles.selectOptionText,
+                  value === opt && styles.selectOptionTextActive,
+                  hoveredOpt === opt && value !== opt && styles.selectOptionTextHovered,
+                ]}
+              >
+                {opt}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
     </View>
   );
 }
@@ -130,12 +172,12 @@ export function Card({ children, style }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
 
-// ─── Divider ─────────────────────────────────────────────────────────────────
+// ─── Divider ──────────────────────────────────────────────────────────────────
 export function Divider() {
   return <View style={styles.divider} />;
 }
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   // Header
   header: {
@@ -182,17 +224,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: typography.sizes.sm,
     color: colors.text,
-    paddingVertical: 4,
-  },
-  searchIcon: {
-    fontSize: 14,
-    marginLeft: spacing.xs,
+    paddingVertical: 10,
   },
 
   // Input
-  inputWrapper: {
-    marginBottom: spacing.md,
-  },
   inputLabel: {
     fontSize: typography.sizes.sm,
     fontWeight: '600',
@@ -216,7 +251,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   inputIcon: {
-    fontSize: 16,
     marginLeft: spacing.sm,
   },
 
@@ -243,7 +277,7 @@ const styles = StyleSheet.create({
   },
   numberBtn: {
     paddingHorizontal: spacing.sm,
-    paddingVertical: 6,
+    paddingVertical: 4,
     alignItems: 'center',
   },
   numberBtnText: {
@@ -307,6 +341,38 @@ const styles = StyleSheet.create({
   selectChevron: {
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  selectDropdown: {
+    marginTop: 4,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    overflow: 'hidden',
+  },
+  selectOption: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.borderLight,
+  },
+  selectOptionActive: {
+    backgroundColor: colors.primary,
+  },
+  selectOptionHovered: {
+    backgroundColor: colors.primaryLight,
+  },
+  selectOptionText: {
+    fontSize: typography.sizes.md,
+    color: colors.text,
+  },
+  selectOptionTextActive: {
+    color: colors.white,
+    fontWeight: '600',
+  },
+  selectOptionTextHovered: {
+    color: colors.primary,
+    fontWeight: '600',
   },
 
   // Card

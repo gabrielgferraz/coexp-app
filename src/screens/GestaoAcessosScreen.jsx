@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader, InputField, SelectField } from '../components/UI';
+import { ScreenHeader, InputField, SelectField, PrimaryButton } from '../components/UI';
 
 const MOCK_USUARIOS = [
   { id: '1', usuario: 'Gabriel', permissao: 'Padrão' },
@@ -21,7 +21,7 @@ const MOCK_USUARIOS = [
 export default function GestaoAcessosScreen({ navigation }) {
   const [novoUsuario, setNovoUsuario] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
-  const [permissao, setPermissao] = useState('Admin');
+  const [permissao, setPermissao] = useState('');
 
   const handleCriarUsuario = () => {
     if (!novoUsuario || !novaSenha) {
@@ -31,6 +31,7 @@ export default function GestaoAcessosScreen({ navigation }) {
     Alert.alert('Usuário criado!', `Usuário "${novoUsuario}" criado com permissão ${permissao}.`);
     setNovoUsuario('');
     setNovaSenha('');
+    setPermissao('');
   };
 
   return (
@@ -38,37 +39,32 @@ export default function GestaoAcessosScreen({ navigation }) {
       <ScreenHeader title="Gestão de Acessos" onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.content}>
+
         {/* Criar usuário */}
         <View style={styles.card}>
-          <View style={styles.createHeader}>
-            <TouchableOpacity style={styles.plusBtn} onPress={handleCriarUsuario}>
-              <Text style={styles.plusText}>+</Text>
-            </TouchableOpacity>
-            <Text style={styles.createLabel}>Criar usuário</Text>
-          </View>
+          <Text style={styles.cardTitle}>Criar usuário</Text>
 
-          <View style={styles.formRow}>
-            <View style={styles.formField}>
-              <InputField
-                placeholder="Digite o nome do usuário..."
-                value={novoUsuario}
-                onChangeText={setNovoUsuario}
-              />
-            </View>
-          </View>
+          <InputField
+            placeholder="Digite o nome do usuário..."
+            value={novoUsuario}
+            onChangeText={setNovoUsuario}
+          />
 
-          <View style={styles.formRow}>
-            <View style={styles.formField}>
-              <InputField
-                placeholder="Digite a senha..."
-                value={novaSenha}
-                onChangeText={setNovaSenha}
-                secureTextEntry
-              />
-            </View>
-          </View>
+          <InputField
+            placeholder="Digite a senha..."
+            value={novaSenha}
+            onChangeText={setNovaSenha}
+            secureTextEntry
+          />
 
-          <SelectField value={permissao} placeholder="Selecione a permissão" />
+          <SelectField
+            value={permissao}
+            onChange={setPermissao}
+            options={['Admin', 'Padrão']}
+            placeholder="Selecione a permissão"
+          />
+
+          <PrimaryButton title="Criar usuário" onPress={handleCriarUsuario} />
         </View>
 
         {/* Tabela de usuários */}
@@ -99,6 +95,7 @@ export default function GestaoAcessosScreen({ navigation }) {
             </View>
           ))}
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -106,51 +103,27 @@ export default function GestaoAcessosScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.md, paddingBottom: spacing.xl },
+  content: {
+    padding: spacing.md,
+    paddingBottom: spacing.xl,
+    gap: spacing.md,
+  },
 
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     padding: spacing.md,
-    marginBottom: spacing.md,
+    gap: spacing.md,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
     shadowRadius: 10,
     elevation: 3,
   },
-  createHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  plusBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-  },
-  plusText: {
-    fontSize: 26,
-    color: colors.primary,
-    fontWeight: '300',
-    lineHeight: 30,
-  },
-  createLabel: {
+  cardTitle: {
     fontSize: typography.sizes.md,
     fontWeight: '600',
     color: colors.text,
-  },
-  formRow: {
-    flexDirection: 'row',
-  },
-  formField: {
-    flex: 1,
   },
 
   // Table

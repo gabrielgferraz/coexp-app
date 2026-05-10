@@ -7,6 +7,7 @@ import {
   ScrollView,
   FlatList,
 } from 'react-native';
+import { IconUserCircle, IconLogout, IconSearch } from '@tabler/icons-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { SearchBar, SelectField } from '../components/UI';
@@ -41,22 +42,28 @@ export default function InsumosScreen({ navigation }) {
   const handleEntrada = () => navigation.navigate('RegistrarEntrada');
   const handleSaida = () => navigation.navigate('RegistrarSaida');
   const handleGestao = () => navigation.navigate('GestaoAcessos');
+  const handleLogout = () => navigation.navigate('Login');
 
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Insumos COEXP</Text>
-        <View style={styles.headerRight}>
-          <SearchBar value={search} onChangeText={setSearch} />
+        <View style={styles.headerActions}>
+          <TouchableOpacity onPress={handleGestao} style={styles.iconBtn}>
+            <IconUserCircle size={20} color="#000000" strokeWidth={1.5} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleLogout} style={styles.iconBtn}>
+            <IconLogout size={20} color="#000000" strokeWidth={1.5} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity onPress={handleGestao} style={styles.gestaoBtn}>
-          <Text style={styles.gestaoBtnText}>👤</Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
         {/* Ação buttons */}
+        <View style={{ marginBottom: spacing.md }}>
+          <SearchBar value={search} onChangeText={setSearch} />
+        </View>
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={[styles.actionBtn, styles.actionBtnEntrada]}
@@ -125,17 +132,36 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 2,
     backgroundColor: colors.primary,
-    gap: spacing.sm,
   },
   headerTitle: {
+    flex: 1,
+    left: 0,
+    right: 0,
+    position: 'absolute',
+    textAlign: 'center',     
     fontSize: typography.sizes.md,
     fontWeight: '700',
     color: colors.white,
-    flexShrink: 0,
-    marginRight: spacing.xs,
+    zIndex: -1,
+  },
+    headerActions: {
+      flexDirection: 'row',
+      gap: spacing.xs,
+  },
+  iconBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoutBtn: {
+    backgroundColor: 'rgba(241, 93, 25, 0.36)',
   },
   headerRight: {
     flex: 1,

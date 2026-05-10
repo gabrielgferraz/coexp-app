@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader, InputField, NumberInput, PrimaryButton } from '../components/UI';
+import { ScreenHeader, SearchBar, NumberInput, PrimaryButton } from '../components/UI';
 
 export default function RegistrarEntradaScreen({ navigation }) {
   const [insumo, setInsumo] = useState('');
-  const [quantidade, setQuantidade] = useState(5);
+  const [quantidade, setQuantidade] = useState(1);
   const [fornecedor, setFornecedor] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [data, setData] = useState(new Date());
@@ -36,22 +36,25 @@ export default function RegistrarEntradaScreen({ navigation }) {
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.card}>
+
             {/* Insumo */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Insumo:</Text>
-              <InputField
-                placeholder="Nome do insumo..."
+              <Text style={styles.label}>Insumo</Text>
+              <SearchBar
                 value={insumo}
                 onChangeText={setInsumo}
-                icon="🔍"
+                placeholder="Nome do insumo..."
               />
             </View>
 
             {/* Quantidade */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Quantidade:</Text>
+              <Text style={styles.label}>Quantidade</Text>
               <NumberInput
                 value={quantidade}
                 onIncrement={() => setQuantidade((q) => q + 1)}
@@ -61,59 +64,52 @@ export default function RegistrarEntradaScreen({ navigation }) {
 
             {/* Fornecedor */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Fornecedor:</Text>
-              <InputField
-                placeholder="Nome do fornecedor..."
+              <Text style={styles.label}>Fornecedor</Text>
+              <SearchBar
                 value={fornecedor}
                 onChangeText={setFornecedor}
-                icon="🔍"
+                placeholder="Nome do fornecedor..."
               />
             </View>
 
             {/* Responsável */}
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Responsável:</Text>
-              <InputField
-                placeholder="Nome do Responsável..."
+              <Text style={styles.label}>Responsável</Text>
+              <SearchBar
                 value={responsavel}
                 onChangeText={setResponsavel}
-                icon="🔍"
+                placeholder="Nome do responsável..."
               />
             </View>
 
             {/* Data da entrada */}
             <View style={styles.fieldGroup}>
-            <Text style={styles.label}>Data da entrada:</Text>
+              <Text style={styles.label}>Data da entrada</Text>
+              <TouchableOpacity
+                style={styles.dateButton}
+                onPress={() => setShowPicker(true)}
+                activeOpacity={0.75}
+              >
+                <Text style={styles.dateButtonText}>
+                  {data.toLocaleDateString('pt-BR')}
+                </Text>
+                <Text style={styles.dateChevron}>›</Text>
+              </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowPicker(true)}
-              activeOpacity={0.75}
-            >
-              <Text style={styles.calendarIcon}>📅</Text>
-              <Text style={styles.dateButtonText}>
-                {data.toLocaleDateString('pt-BR')}
-              </Text>
-              <Text style={styles.dateChevron}>›</Text>
-            </TouchableOpacity>
-
-            {showPicker && (
-              <DateTimePicker
-                value={data}
-                mode="date"
-                display="default"
-                locale="pt-BR"
-                onChange={(event, selectedDate) => {
-                  setShowPicker(false);
-                  if (selectedDate) setData(selectedDate);
-                }}
-              />
-            )}
-          </View>
-
-            <View style={styles.submitWrapper}>
-              <PrimaryButton title="Confirmar entrada" onPress={handleConfirmar} />
+              {showPicker && (
+                <DateTimePicker
+                  value={data}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowPicker(false);
+                    if (selectedDate) setData(selectedDate);
+                  }}
+                />
+              )}
             </View>
+
+            <PrimaryButton title="Confirmar entrada" onPress={handleConfirmar} />
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -124,11 +120,15 @@ export default function RegistrarEntradaScreen({ navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   flex: { flex: 1 },
-  content: { padding: spacing.md, paddingBottom: spacing.xl },
+  content: {
+    padding: spacing.md,
+    paddingBottom: spacing.xl,
+  },
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
     padding: spacing.md,
+    gap: spacing.md,
     shadowColor: colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 1,
@@ -136,44 +136,32 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   fieldGroup: {
-    marginBottom: spacing.xs,
+    gap: spacing.xs,
   },
   label: {
     fontSize: typography.sizes.sm,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: spacing.xs,
     letterSpacing: 0.2,
   },
   dateButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.primary,
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm + 4,
-    marginBottom: spacing.md,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
-    elevation: 3,
-  },
-  calendarIcon: {
-    fontSize: 20,
-    marginRight: spacing.sm,
   },
   dateButtonText: {
     flex: 1,
     fontSize: typography.sizes.md,
-    fontWeight: '600',
-    color: colors.primary,
+    color: colors.text,
   },
   dateChevron: {
     fontSize: 22,
-    color: colors.primary,
+    color: colors.textSecondary,
     fontWeight: '300',
   },
 });
