@@ -30,13 +30,16 @@ coexp-app/
     ├── theme.js                    # Cores, tipografia e espaçamentos globais
     ├── components/
     │   └── UI.js                   # Componentes reutilizáveis (inputs, botões, tabelas)
+    ├── data/
+    │   └── mockData.js             # Dados para exibir nas telas
     └── screens/
         ├── LoginScreen.js
         ├── InsumosScreen.js
         ├── DetalhesInsumoScreen.js
         ├── RegistrarEntradaScreen.js
         ├── RegistrarSaidaScreen.js
-        └── GestaoAcessosScreen.js
+        ├── GestaoAcessosScreen.js
+        └── DashboardScreen.js
 ```
 
 ---
@@ -77,6 +80,12 @@ npx expo start --clear
 | `react-native-safe-area-context` | Área segura (notch, barra de status) |
 | `react-native-screens` | Otimização de telas nativas |
 | `@react-native-community/datetimepicker` | Seletor de data nativo (Android/iOS) |
+| `@tabler/icons-react-native` | Biblioteca de ícones SVG (lupa, usuário, logout) |
+| `react-native-chart-kit` | Gráficos de barras e pizza no Dashboard |
+| `react-native-svg` | Renderização de vetores — dependência dos gráficos |
+| `expo-status-bar` | Controle da barra de status do dispositivo |
+| `react-native-web` | Suporte para execução do app no navegador via expo start --web |
+| `react-dom` | Dependência do react-native-web para renderização web |
 
 ---
 ## 👥 Autores
