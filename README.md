@@ -36,6 +36,7 @@ coexp-app/
         ├── LoginScreen.js
         ├── InsumosScreen.js
         ├── DetalhesInsumoScreen.js
+        ├── CadastroInsumoScreen.js
         ├── RegistrarEntradaScreen.js
         ├── RegistrarSaidaScreen.js
         ├── GestaoAcessosScreen.js

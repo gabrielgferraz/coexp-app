@@ -138,44 +138,4 @@ const styles = StyleSheet.create({
   fieldGroup: {
     gap: spacing.xs,
   },
-
-  // Tabela
-  tableCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-  },
-  rowAlt: { backgroundColor: colors.tableRowAlt },
-  tableHeader: { backgroundColor: colors.primary, borderBottomWidth: 0 },
-  headerText: {
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: typography.sizes.xs,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
-  },
-  col:      { fontSize: typography.sizes.sm },
-  colNome:  { flex: 1 },
-  colUnid:  { width: 70, textAlign: 'center' },
-  colMin:   { width: 40, textAlign: 'right' },
-  cellText: { color: colors.text },
-  emptyRow: { padding: spacing.lg, alignItems: 'center' },
-  emptyText: {
-    color: colors.textSecondary,
-    fontSize: typography.sizes.sm,
-    fontStyle: 'italic',
-  },
 });
