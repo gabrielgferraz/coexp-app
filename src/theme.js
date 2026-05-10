@@ -13,7 +13,8 @@ export const colors = {
   tableRowAlt: '#f0f4f5',
   inputBg: '#fafbfc',
   white: '#FFFFFF',
-  danger: '#c67428',
+  black: '#000000',
+  danger: '#C62828',
   shadow: 'rgba(26, 58, 42, 0.12)',
 };
 

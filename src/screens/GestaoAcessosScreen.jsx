@@ -10,13 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { ScreenHeader, InputField, SelectField, PrimaryButton } from '../components/UI';
-
-const MOCK_USUARIOS = [
-  { id: '1', usuario: 'Gabriel', permissao: 'Padrão' },
-  { id: '2', usuario: 'Ana', permissao: 'Admin' },
-  { id: '3', usuario: '—', permissao: null },
-  { id: '4', usuario: '—', permissao: null },
-];
+import { MOCK_USUARIOS } from '../data/mockData';
 
 export default function GestaoAcessosScreen({ navigation }) {
   const [novoUsuario, setNovoUsuario] = useState('');

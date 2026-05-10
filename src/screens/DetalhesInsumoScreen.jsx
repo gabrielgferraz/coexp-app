@@ -8,20 +8,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { ScreenHeader } from '../components/UI';
-
-export const TODAS_MOVIMENTACOES = [
-  { tipo: 'Entrada', insumo: 'Insumo A', qtd: 15, data: '01/04/2026', responsavel: 'Gabriel' },
-  { tipo: 'Saída',   insumo: 'Insumo B', qtd: 3,  data: '28/03/2026', responsavel: 'Ana' },
-  { tipo: 'Entrada', insumo: 'Insumo C', qtd: 10, data: '25/03/2026', responsavel: 'Gabriel' },
-  { tipo: 'Saída',   insumo: 'Insumo A', qtd: 20, data: '15/03/2026', responsavel: 'Ana' },
-  { tipo: 'Entrada', insumo: 'Insumo E', qtd: 18, data: '10/03/2026', responsavel: 'Gabriel' },
-];
+import { MOCK_MOVIMENTACOES } from '../data/mockData';
 
 export default function DetalhesInsumoScreen({ navigation, route }) {
   const insumo = route.params?.insumo ?? { nome: 'Insumo A', qtd: 34, unidade: 'Litros' };
 
   // Filtra somente as movimentações deste insumo
-  const movimentacoes = TODAS_MOVIMENTACOES.filter(
+  const movimentacoes = MOCK_MOVIMENTACOES.filter(
     (m) => m.insumo === insumo.nome
   );
 

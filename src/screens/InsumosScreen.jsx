@@ -5,35 +5,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  FlatList,
 } from 'react-native';
-import { IconUserCircle, IconLogout, IconSearch } from '@tabler/icons-react-native'
+import { IconUserCircle, IconLogout} from '@tabler/icons-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { SearchBar, SelectField } from '../components/UI';
-
-const MOCK_INSUMOS = [
-  { id: '1', nome: 'Insumo A', qtd: 34, unidade: 'Litros' },
-  { id: '2', nome: 'Insumo B', qtd: 2, unidade: 'Un' },
-  { id: '3', nome: 'Insumo C', qtd: 10, unidade: 'Kg' },
-  { id: '4', nome: 'Insumo D', qtd: 5, unidade: 'Un' },
-  { id: '5', nome: 'Insumo E', qtd: 18, unidade: 'Litros' },
-  { id: '6', nome: '—', qtd: null, unidade: null },
-  { id: '7', nome: '—', qtd: null, unidade: null },
-  { id: '8', nome: '—', qtd: null, unidade: null },
-  { id: '9', nome: '—', qtd: null, unidade: null },
-  { id: '10', nome: '—', qtd: null, unidade: null },
-  { id: '11', nome: '—', qtd: null, unidade: null },
-  { id: '12', nome: '—', qtd: null, unidade: null },
-  { id: '13', nome: '—', qtd: null, unidade: null },
-  { id: '14', nome: '—', qtd: null, unidade: null },
-  { id: '15', nome: '—', qtd: null, unidade: null },
-  { id: '16', nome: '—', qtd: null, unidade: null },
-  { id: '17', nome: '—', qtd: null, unidade: null },
-  { id: '18', nome: '—', qtd: null, unidade: null },
-  { id: '19', nome: '—', qtd: null, unidade: null },
-  { id: '20', nome: '—', qtd: null, unidade: null },
-];
+import { SearchBar} from '../components/UI';
+import { MOCK_INSUMOS } from '../data/mockData.js';
 
 export default function InsumosScreen({ navigation }) {
   const [search, setSearch] = useState('');
@@ -43,8 +20,6 @@ export default function InsumosScreen({ navigation }) {
     item.nome !== '—' &&
     item.nome.toLowerCase().includes(search.toLowerCase())
   );
-
-  const [movimentacao, setMovimentacao] = useState('Registrar nova movimentação');
 
   const handleEntrada = () => navigation.navigate('RegistrarEntrada');
   const handleSaida = () => navigation.navigate('RegistrarSaida');
@@ -170,21 +145,15 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  logoutBtn: {
-    backgroundColor: 'rgba(241, 93, 25, 0.36)',
-  },
-  headerRight: {
-    flex: 1,
   },
   gestaoBtn: {
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -195,9 +164,6 @@ const styles = StyleSheet.create({
   scrollContent: {
     padding: spacing.md,
     paddingBottom: spacing.xl,
-  },
-  section: {
-    marginBottom: spacing.sm,
   },
   actionRow: {
     flexDirection: 'row',
@@ -219,25 +185,25 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   actionBtnEntrada: {
-    backgroundColor: '#368dc7',
-    borderColor: '#94cbdb',
+    backgroundColor: colors.primary,
+    borderColor: colors.primaryLight,
     shadowColor: 'rgba(26, 58, 42, 0.12)',
   },
   actionBtnSaida: {
-    backgroundColor: '#FFFFFF',
-    borderColor: '#1A3A2A',
-    shadowColor: '#1A3A2A',
+    backgroundColor: colors.white,
+    borderColor: colors.black,
+    shadowColor: colors.shadow,
   },
   actionBtnIcon: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: colors.white,
   },
   actionBtnText: {
     fontSize: typography.sizes.md,
     fontWeight: '700',
     letterSpacing: 0.5,
-    color: '#FFFFFF',
+    color: colors.white,
   },
 
   // Table

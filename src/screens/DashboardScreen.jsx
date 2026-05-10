@@ -15,37 +15,23 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const CHART_WIDTH = SCREEN_WIDTH - spacing.md * 2 - 2;
 
 // ─── Dados mockados ───────────────────────────────────────────────────────────
-const INSUMOS = [
-  { nome: 'Insumo A', qtd: 34, unidade: 'Litros' },
-  { nome: 'Insumo B', qtd: 2,  unidade: 'Un' },
-  { nome: 'Insumo C', qtd: 10, unidade: 'Kg' },
-  { nome: 'Insumo D', qtd: 5,  unidade: 'Un' },
-  { nome: 'Insumo E', qtd: 18, unidade: 'Litros' },
-];
-
-const MOVIMENTACOES = [
-  { tipo: 'Entrada', insumo: 'Insumo A', qtd: 15, data: '01/04/2026', responsavel: 'Gabriel' },
-  { tipo: 'Saída',   insumo: 'Insumo B', qtd: 3,  data: '28/03/2026', responsavel: 'Ana' },
-  { tipo: 'Entrada', insumo: 'Insumo C', qtd: 10, data: '25/03/2026', responsavel: 'Gabriel' },
-  { tipo: 'Saída',   insumo: 'Insumo A', qtd: 20, data: '15/03/2026', responsavel: 'Ana' },
-  { tipo: 'Entrada', insumo: 'Insumo E', qtd: 18, data: '10/03/2026', responsavel: 'Gabriel' },
-];
+import { MOCK_INSUMOS, MOCK_MOVIMENTACOES } from '../data/mockData';
 
 const LIMITE_BAIXO = 6;
 
 // ─── Cálculos ─────────────────────────────────────────────────────────────────
-const totalInsumos = INSUMOS.length;
-const totalEstoque = INSUMOS.reduce((acc, i) => acc + i.qtd, 0);
-const estoqueBaixo = INSUMOS.filter((i) => i.qtd < LIMITE_BAIXO).length;
+const totalInsumos = MOCK_INSUMOS.length;
+const totalEstoque = MOCK_INSUMOS.reduce((acc, i) => acc + i.qtd, 0);
+const estoqueBaixo = MOCK_INSUMOS.filter((i) => i.qtd < LIMITE_BAIXO).length;
 
 // Dados para gráfico de barras
 const barData = {
-  labels: INSUMOS.map((i) => i.nome.replace('Insumo ', '')),
-  datasets: [{ data: INSUMOS.map((i) => i.qtd) }],
+  labels: MOCK_INSUMOS.map((i) => i.nome.replace('Insumo ', '')),
+  datasets: [{ data: MOCK_INSUMOS.map((i) => i.qtd) }],
 };
 
 // Dados para gráfico de pizza (por unidade)
-const unidades = INSUMOS.reduce((acc, i) => {
+const unidades = MOCK_INSUMOS.reduce((acc, i) => {
   acc[i.unidade] = (acc[i.unidade] || 0) + i.qtd;
   return acc;
 }, {});
@@ -93,13 +79,13 @@ export default function DashboardScreen({ navigation }) {
             label="Em Estoque"
             value={totalEstoque}
             sub="unidades totais"
-            color="#2E7D32"
+            color={colors.accent}
           />
           <SummaryCard
             label="Estoque Baixo"
             value={estoqueBaixo}
             sub={`abaixo de ${LIMITE_BAIXO}`}
-            color={estoqueBaixo > 0 ? '#C62828' : '#2E7D32'}
+            color={estoqueBaixo > 0 ? colors.danger : colors.accent}
           />
         </View>
 
@@ -144,7 +130,7 @@ export default function DashboardScreen({ navigation }) {
             <Text style={[styles.col, styles.colResp,  styles.headerText]}>Resp.</Text>
           </View>
 
-          {MOVIMENTACOES.map((item, idx) => (
+          {MOCK_MOVIMENTACOES.map((item, idx) => (
             <View key={idx} style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}>
               <Text
                 style={[
@@ -281,6 +267,6 @@ const styles = StyleSheet.create({
   colData:   { flex: 1.5, textAlign: 'center' },
   colResp:   { flex: 1.2, textAlign: 'right' },
   cellText:  { color: colors.text },
-  entradaText: { color: '#2E7D32', fontWeight: '700' },
-  saidaText:   { color: '#C62828', fontWeight: '700' },
+  entradaText: { color: colors.accent, fontWeight: '700' },
+  saidaText:   { color: colors.danger, fontWeight: '700' },
 });
