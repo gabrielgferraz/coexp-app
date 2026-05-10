@@ -146,7 +146,6 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.md,
     fontWeight: '700',
     color: colors.white,
-    zIndex: -1,
   },
     headerActions: {
       flexDirection: 'row',
