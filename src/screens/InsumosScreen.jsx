@@ -26,6 +26,7 @@ export default function InsumosScreen({ navigation }) {
   const handleGestao = () => navigation.navigate('GestaoAcessos');
   const handleDashboard = () => navigation.navigate('Dashboard');
   const handleLogout = () => navigation.navigate('Login');
+  const handleCadastrar = () => navigation.navigate('CadastroInsumo');
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -50,6 +51,16 @@ export default function InsumosScreen({ navigation }) {
         <View style={{ marginBottom: spacing.md }}>
           <SearchBar value={search} onChangeText={setSearch} />
         </View>
+
+        <TouchableOpacity
+            style={[styles.actionBtn, styles.actionBtnCadastrar]}
+            onPress={handleCadastrar}
+            activeOpacity={0.75}
+          >
+            <Text style={styles.actionBtnIcon}>+</Text>
+            <Text style={styles.actionBtnText}>Cadastrar Insumo</Text>
+          </TouchableOpacity>
+
         <View style={styles.actionRow}>
           <TouchableOpacity
             style={[styles.actionBtn, styles.actionBtnEntrada]}
@@ -65,8 +76,8 @@ export default function InsumosScreen({ navigation }) {
             onPress={handleSaida}
             activeOpacity={0.75}
           >
-            <Text style={[styles.actionBtnIcon, { color: colors.primary }]}>↑</Text>
-            <Text style={[styles.actionBtnText, { color: colors.primary }]}>Registrar Saída</Text>
+            <Text style={styles.actionBtnIcon}>↑</Text>
+            <Text style={styles.actionBtnText}>Registrar Saída</Text>
           </TouchableOpacity>
         </View>
 
@@ -185,13 +196,19 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   actionBtnEntrada: {
+    backgroundColor: colors.afirmative,
+    borderColor: colors.afirmativeLight,
+    shadowColor: 'rgba(26, 58, 42, 0.12)',
+  },
+  actionBtnCadastrar: {
     backgroundColor: colors.primary,
     borderColor: colors.primaryLight,
     shadowColor: 'rgba(26, 58, 42, 0.12)',
+    marginBottom: spacing.md,
   },
   actionBtnSaida: {
-    backgroundColor: colors.white,
-    borderColor: colors.black,
+    backgroundColor: colors.danger,
+    borderColor: colors.dangerLight,
     shadowColor: colors.shadow,
   },
   actionBtnIcon: {

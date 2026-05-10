@@ -15,6 +15,9 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
   danger: '#C62828',
+  dangerLight: '#ef5350',
+  afirmative: '#50c878',
+  afirmativeLight: '#81c784',
   shadow: 'rgba(26, 58, 42, 0.12)',
 };
 
