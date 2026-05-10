@@ -81,4 +81,9 @@ npx expo start --clear
 ---
 ## 👥 Autores
 
+- FELIPE DALLA VECCHIA CAMBUI 
+- GABRIEL GOULART FERRAZ
+- JOAO PEDRO BORDIGNON
+- VINICIUS BANDEIRA ALBERTON
+
 Desenvolvido como projeto acadêmico para a disciplina de desenvolvimento mobile — COEXP.
