@@ -15,9 +15,9 @@ import { SearchBar, SelectField } from '../components/UI';
 const MOCK_INSUMOS = [
   { id: '1', nome: 'Insumo A', qtd: 34, unidade: 'Litros' },
   { id: '2', nome: 'Insumo B', qtd: 2, unidade: 'Un' },
-  { id: '3', nome: '—', qtd: null, unidade: null },
-  { id: '4', nome: '—', qtd: null, unidade: null },
-  { id: '5', nome: '—', qtd: null, unidade: null },
+  { id: '3', nome: 'Insumo C', qtd: 10, unidade: 'Kg' },
+  { id: '4', nome: 'Insumo D', qtd: 5, unidade: 'Un' },
+  { id: '5', nome: 'Insumo E', qtd: 18, unidade: 'Litros' },
   { id: '6', nome: '—', qtd: null, unidade: null },
   { id: '7', nome: '—', qtd: null, unidade: null },
   { id: '8', nome: '—', qtd: null, unidade: null },
@@ -37,6 +37,11 @@ const MOCK_INSUMOS = [
 
 export default function InsumosScreen({ navigation }) {
   const [search, setSearch] = useState('');
+
+  const insumosFiltrados = MOCK_INSUMOS.filter((item) =>
+    item.nome.toLowerCase().includes(search.toLowerCase())
+  );
+
   const [movimentacao, setMovimentacao] = useState('Registrar nova movimentação');
 
   const handleEntrada = () => navigation.navigate('RegistrarEntrada');
@@ -98,26 +103,30 @@ export default function InsumosScreen({ navigation }) {
           </View>
 
           {/* Table Rows */}
-          {MOCK_INSUMOS.map((item, idx) => (
+          {insumosFiltrados.length > 0 ? (
+          insumosFiltrados.map((item, idx) => (
             <TouchableOpacity
               key={item.id}
               style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
-              onPress={() =>
-                item.qtd !== null && navigation.navigate('DetalhesInsumo', { insumo: item })
-              }
-              activeOpacity={item.qtd !== null ? 0.7 : 1}
+              onPress={() => navigation.navigate('DetalhesInsumo', { insumo: item })}
+              activeOpacity={0.7}
             >
               <Text style={[styles.tableCell, styles.cellFlex, styles.tableCellText]}>
                 {item.nome}
               </Text>
               <Text style={[styles.tableCell, styles.cellSmall, styles.tableCellText]}>
-                {item.qtd ?? '—'}
+                {item.qtd}
               </Text>
               <Text style={[styles.tableCell, styles.cellMedium, styles.tableCellText]}>
-                {item.unidade ?? '—'}
+                {item.unidade}
               </Text>
             </TouchableOpacity>
-          ))}
+          ))
+        ) : (
+          <View style={styles.emptyRow}>
+            <Text style={styles.emptyText}>Nenhum insumo encontrado.</Text>
+          </View>
+        )}
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -274,5 +283,14 @@ const styles = StyleSheet.create({
   cellMedium: {
     width: 70,
     textAlign: 'right',
+  },
+  emptyRow: {
+    padding: spacing.lg,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: colors.textSecondary,
+    fontSize: typography.sizes.sm,
+    fontStyle: 'italic',
   },
 });
