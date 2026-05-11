@@ -14,11 +14,7 @@ import { ScreenHeader, InputField, SelectField, NumberInput, PrimaryButton } fro
 
 const UNIDADES = ['Litros', 'Kg', 'Un', 'Caixas', 'Metros', 'Gramas'];
 
-const MOCK_INSUMOS_CADASTRADOS = [
-  { id: '1', nome: 'Insumo A', unidade: 'Litros', estoqueMinimo: 10 },
-  { id: '2', nome: 'Insumo B', unidade: 'Un',     estoqueMinimo: 5  },
-  { id: '3', nome: 'Insumo C', unidade: 'Kg',     estoqueMinimo: 8  },
-];
+import { MOCK_INSUMOS_CADASTRADOS } from '../data/mockData';
 
 export default function CadastroInsumoScreen({ navigation }) {
   const [nome, setNome]                   = useState('');
