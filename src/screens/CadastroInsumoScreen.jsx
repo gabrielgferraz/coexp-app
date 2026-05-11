@@ -14,13 +14,10 @@ import { ScreenHeader, InputField, SelectField, NumberInput, PrimaryButton } fro
 
 const UNIDADES = ['Litros', 'Kg', 'Un', 'Caixas', 'Metros', 'Gramas'];
 
-import { MOCK_INSUMOS_CADASTRADOS } from '../data/mockData';
-
 export default function CadastroInsumoScreen({ navigation }) {
   const [nome, setNome]                   = useState('');
   const [unidade, setUnidade]             = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState(1);
-  const [insumos, setInsumos]             = useState(MOCK_INSUMOS_CADASTRADOS);
 
   const handleCadastrar = () => {
     if (!nome.trim()) {
@@ -39,7 +36,6 @@ export default function CadastroInsumoScreen({ navigation }) {
       estoqueMinimo,
     };
 
-    setInsumos((prev) => [novoInsumo, ...prev]);
 
     Alert.alert('Insumo cadastrado!', `"${nome.trim()}" foi adicionado com sucesso.`, [
       { text: 'OK' },
@@ -62,11 +58,9 @@ export default function CadastroInsumoScreen({ navigation }) {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          {/* ── Formulário ── */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Novo insumo</Text>
 
-            {/* Nome */}
             <View style={styles.fieldGroup}>
               <InputField
                 label="Nome do insumo"
@@ -76,7 +70,6 @@ export default function CadastroInsumoScreen({ navigation }) {
               />
             </View>
 
-            {/* Unidade de medida */}
             <View style={styles.fieldGroup}>
               <SelectField
                 label="Unidade de medida"
@@ -87,7 +80,6 @@ export default function CadastroInsumoScreen({ navigation }) {
               />
             </View>
 
-            {/* Estoque mínimo */}
             <View style={styles.fieldGroup}>
               <NumberInput
                 label="Estoque mínimo"
@@ -114,7 +106,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
 
-  // Card do formulário
   card: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,

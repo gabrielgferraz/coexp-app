@@ -19,9 +19,3 @@ export const MOCK_INSUMOS = [
     { id: '1', usuario: 'Gabriel', permissao: 'Padrão' },
     { id: '2', usuario: 'Ana',     permissao: 'Admin' },
   ];
-
-  export const MOCK_INSUMOS_CADASTRADOS = [
-    { id: '1', nome: 'Insumo A', unidade: 'Litros', estoqueMinimo: 10 },
-    { id: '2', nome: 'Insumo B', unidade: 'Un',     estoqueMinimo: 5  },
-    { id: '3', nome: 'Insumo C', unidade: 'Kg',     estoqueMinimo: 8  },
-  ];
