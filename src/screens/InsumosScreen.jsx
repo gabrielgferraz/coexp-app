@@ -89,6 +89,7 @@ export default function InsumosScreen({ navigation }) {
               Nome do Insumo
             </Text>
             <Text style={[styles.tableCell, styles.tableHeaderText, styles.cellSmall]}>Qtd.</Text>
+            <Text style={[styles.tableCell, styles.tableHeaderText, styles.cellSmall]}>Mín.</Text>
             <Text style={[styles.tableCell, styles.tableHeaderText, styles.cellMedium]}>
               Unidade
             </Text>
@@ -106,8 +107,21 @@ export default function InsumosScreen({ navigation }) {
               <Text style={[styles.tableCell, styles.cellFlex, styles.tableCellText]}>
                 {item.nome}
               </Text>
-              <Text style={[styles.tableCell, styles.cellSmall, styles.tableCellText]}>
+              <Text style={[
+                styles.tableCell,
+                styles.cellSmall,
+                styles.tableCellText,
+                styles.qtdBadge,
+                item.qtd < item.estoqueMinimo
+                  ? styles.qtdDanger
+                  : item.qtd === item.estoqueMinimo
+                  ? styles.qtdWarning
+                  : styles.qtdAfirmative,
+              ]}>
                 {item.qtd}
+              </Text>
+              <Text style={[styles.tableCell, styles.cellSmall, styles.tableCellText]}>
+                {item.estoqueMinimo ?? '—'}
               </Text>
               <Text style={[styles.tableCell, styles.cellMedium, styles.tableCellText]}>
                 {item.unidade}
@@ -272,6 +286,21 @@ const styles = StyleSheet.create({
   cellMedium: {
     width: 70,
     textAlign: 'right',
+  },
+  qtdBadge: {
+    fontWeight: '700',
+    borderRadius: 4,
+    overflow: 'hidden',
+    paddingVertical: 1,
+  },
+  qtdDanger: {
+    color: colors.danger,
+  },
+  qtdWarning: {
+    color: colors.warning,
+  },
+  qtdAfirmative: {
+    color: colors.afirmative,
   },
   emptyRow: {
     padding: spacing.lg,

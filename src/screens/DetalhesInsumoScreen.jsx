@@ -11,7 +11,23 @@ import { ScreenHeader } from '../components/UI';
 import { MOCK_MOVIMENTACOES } from '../data/mockData';
 
 export default function DetalhesInsumoScreen({ navigation, route }) {
-  const insumo = route.params?.insumo ?? { nome: 'Insumo A', qtd: 34, unidade: 'Litros' };
+  const insumo = route.params?.insumo ?? { nome: 'Insumo A', qtd: 34, unidade: 'Litros', estoqueMinimo: 10 };
+
+  const estoqueStatus =
+    insumo.estoqueMinimo == null
+      ? null
+      : insumo.qtd < insumo.estoqueMinimo
+      ? 'danger'
+      : insumo.qtd === insumo.estoqueMinimo
+      ? 'warning'
+      : 'afirmative';
+
+  const estoqueCircleColor =
+    estoqueStatus === 'danger'
+      ? colors.danger
+      : estoqueStatus === 'warning'
+      ? colors.warning
+      : colors.afirmative;
 
   // Filtra somente as movimentações deste insumo
   const movimentacoes = MOCK_MOVIMENTACOES.filter(
@@ -29,10 +45,21 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
         {/* Saldo atual */}
         <View style={styles.saldoCard}>
           <Text style={styles.saldoLabel}>Saldo atual:</Text>
-          <View style={styles.saldoCircle}>
-            <Text style={styles.saldoValue}>{insumo.qtd ?? '—'}</Text>
+          <View style={[styles.saldoCircle, estoqueStatus && { borderColor: estoqueCircleColor }]}>
+            <Text style={[styles.saldoValue, estoqueStatus && { color: estoqueCircleColor }]}>
+              {insumo.qtd ?? '—'}
+            </Text>
           </View>
           <Text style={styles.saldoUnidade}>{insumo.unidade ?? '—'}</Text>
+
+          {insumo.estoqueMinimo != null && (
+            <View style={styles.minimoContainer}>
+              <Text style={styles.minimoLabel}>Est. mín.</Text>
+              <Text style={[styles.minimoValue, { color: estoqueCircleColor }]}>
+                {insumo.estoqueMinimo}
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Movimentações filtradas */}
@@ -117,6 +144,27 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.md,
     color: colors.textSecondary,
     fontWeight: '500',
+  },
+  minimoContainer: {
+    marginLeft: 'auto',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: radius.md,
+    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  minimoLabel: {
+    fontSize: typography.sizes.xs,
+    color: colors.textSecondary,
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  minimoValue: {
+    fontSize: typography.sizes.lg,
+    fontWeight: '700',
   },
 
   // Table

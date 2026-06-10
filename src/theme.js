@@ -19,6 +19,7 @@ export const colors = {
   afirmative: '#50c878',
   afirmativeLight: '#81c784',
   shadow: 'rgba(26, 58, 42, 0.12)',
+  warning: '#B8860B',
 };
 
 export const typography = {
