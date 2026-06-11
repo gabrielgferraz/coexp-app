@@ -61,16 +61,12 @@ export default function CadastroInsumoScreen({ navigation }) {
         criadoEm: new Date()
       });
 
-      Alert.alert(
-        'Insumo cadastrado!',
-        `"${nome.trim()}" foi adicionado com sucesso.`,
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
-
       // Reset form
       setNome('');
       setUnidade('');
       setEstoqueMinimo(1);
+
+      Alert.alert('Cadastro feito', `"${nome.trim()}" foi adicionado com sucesso.`);
 
     } catch (error) {
       console.log('Erro Firebase:', error);

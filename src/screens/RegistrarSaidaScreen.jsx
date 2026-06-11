@@ -103,11 +103,14 @@ export default function RegistrarSaidaScreen({ navigation }) {
         criadoEm: new Date()
       });
 
-      Alert.alert(
-        'Saída registrada!',
-        'A saída foi registrada com sucesso.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
+      // Reset fields
+      setInsumoSelecionado('');
+      setQuantidade(1);
+      setDestino('');
+      setResponsavel('');
+      setData(new Date());
+
+      Alert.alert('Movimentação registrada', 'Saída salva com sucesso.');
 
     } catch (error) {
       console.log('Erro Firebase:', error);

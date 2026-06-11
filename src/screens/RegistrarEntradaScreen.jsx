@@ -94,11 +94,14 @@ export default function RegistrarEntradaScreen({ navigation }) {
         criadoEm: new Date()
       });
 
-      Alert.alert(
-        'Entrada registrada!',
-        'A entrada foi registrada com sucesso.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
+      // Reset fields
+      setInsumoSelecionado('');
+      setQuantidade(1);
+      setFornecedor('');
+      setResponsavel('');
+      setData(new Date());
+
+      Alert.alert('Movimentação registrada', 'Entrada salva com sucesso.');
 
     } catch (error) {
       console.log('Erro Firebase:', error);
