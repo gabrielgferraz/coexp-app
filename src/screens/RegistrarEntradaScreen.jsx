@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from 'react';
-
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
@@ -11,30 +9,12 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import {
-  colors,
-  spacing,
-  radius,
-  typography
-} from '../theme';
-
-import {
-  ScreenHeader,
-  NumberInput,
-  PrimaryButton,
-} from '../components/UI';
-
-import {
-  collection,
-  getDocs,
-  addDoc,
-  updateDoc,
-  doc
-} from 'firebase/firestore';
-
+import { colors, spacing, radius, typography } from '../theme';
+import { ScreenHeader, NumberInput, PrimaryButton } from '../components/UI';
+import NativePicker from '../components/NativePicker';
+import NativeDatePicker from '../components/NativeDatePicker';
+import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
 import db from '../firebase/firestore';
 
 
@@ -51,11 +31,7 @@ export default function RegistrarEntradaScreen({ navigation }) {
     async function carregarInsumos() {
       try {
         const snapshot = await getDocs(collection(db, 'insumos'));
-        const lista = snapshot.docs.map(d => ({
-          id: d.id,
-          ...d.data()
-        }));
-        setInsumos(lista);
+        setInsumos(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
       } catch (error) {
         console.log('Erro carregando insumos:', error);
       }
@@ -65,24 +41,15 @@ export default function RegistrarEntradaScreen({ navigation }) {
 
 
   const handleConfirmar = async () => {
-
     const insumo = insumos.find(item => item.id === insumoSelecionado);
 
-    if (!insumo) {
-      Alert.alert('Atenção', 'Selecione um insumo.');
-      return;
-    }
-
-    if (quantidade <= 0) {
-      Alert.alert('Atenção', 'Informe uma quantidade válida.');
-      return;
-    }
+    if (!insumo) { Alert.alert('Atenção', 'Selecione um insumo.'); return; }
+    if (quantidade <= 0) { Alert.alert('Atenção', 'Informe uma quantidade válida.'); return; }
 
     try {
       await updateDoc(doc(db, 'insumos', insumo.id), {
         qtd: (insumo.qtd ?? 0) + quantidade
       });
-
       await addDoc(collection(db, 'movimentacoes'), {
         insumoId: insumo.id,
         insumoNome: insumo.nome,
@@ -94,7 +61,6 @@ export default function RegistrarEntradaScreen({ navigation }) {
         criadoEm: new Date()
       });
 
-      // Reset fields
       setInsumoSelecionado('');
       setQuantidade(1);
       setFornecedor('');
@@ -110,61 +76,30 @@ export default function RegistrarEntradaScreen({ navigation }) {
   };
 
 
-  // Web-safe date change handler
-  const handleDateChange = (e) => {
-    const value = e.target.value; // "YYYY-MM-DD"
-    if (value) {
-      // Parse avoiding timezone offset issues
-      const [year, month, day] = value.split('-').map(Number);
-      setData(new Date(year, month - 1, day));
-    }
-  };
-
-  // Format date to YYYY-MM-DD for the web input
-  const toInputValue = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, '0');
-    const d = String(date.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  };
-
-
   return (
     <SafeAreaView style={styles.safe}>
-
-      <ScreenHeader
-        title="Registrar Entrada"
-        onBack={() => navigation.goBack()}
-      />
+      <ScreenHeader title="Registrar Entrada" onBack={() => navigation.goBack()} />
 
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
           <View style={styles.card}>
 
-            {/* Insumo — native <select> works on all platforms */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Insumo</Text>
-              <select
+              <NativePicker
                 value={insumoSelecionado}
-                onChange={e => setInsumoSelecionado(e.target.value)}
-                style={styles.webSelect}
-              >
-                <option value="">Selecione o insumo...</option>
-                {insumos.map(item => (
-                  <option key={item.id} value={item.id}>
-                    {item.nome} ({item.qtd ?? 0})
-                  </option>
-                ))}
-              </select>
+                onChange={setInsumoSelecionado}
+                placeholder="Selecione o insumo..."
+                options={insumos.map(item => ({
+                  label: `${item.nome} (${item.qtd ?? 0})`,
+                  value: item.id,
+                }))}
+              />
             </View>
 
-            {/* Quantidade */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Quantidade</Text>
               <NumberInput
@@ -174,7 +109,6 @@ export default function RegistrarEntradaScreen({ navigation }) {
               />
             </View>
 
-            {/* Fornecedor */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Fornecedor</Text>
               <TextInput
@@ -185,7 +119,6 @@ export default function RegistrarEntradaScreen({ navigation }) {
               />
             </View>
 
-            {/* Responsável */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Responsável</Text>
               <TextInput
@@ -196,94 +129,34 @@ export default function RegistrarEntradaScreen({ navigation }) {
               />
             </View>
 
-            {/* Data — native <input type="date"> works everywhere on web */}
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Data da entrada</Text>
-              <input
-                type="date"
-                value={toInputValue(data)}
-                onChange={handleDateChange}
-                style={styles.webDateInput}
-              />
+              <NativeDatePicker value={data} onChange={setData} />
             </View>
 
-            <PrimaryButton
-              title="Confirmar entrada"
-              onPress={handleConfirmar}
-            />
+            <PrimaryButton title="Confirmar entrada" onPress={handleConfirmar} />
 
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-
     </SafeAreaView>
   );
 }
 
 
 const styles = StyleSheet.create({
-
-  safe: {
-    flex: 1,
-    backgroundColor: colors.background
-  },
-
-  flex: {
-    flex: 1
-  },
-
-  content: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl
-  },
-
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.md,
-    gap: spacing.md
-  },
-
-  fieldGroup: {
-    gap: spacing.xs
-  },
-
-  label: {
-    fontSize: typography.sizes.sm,
-    fontWeight: '600',
-    color: colors.text
-  },
-
+  safe:       { flex: 1, backgroundColor: colors.background },
+  flex:       { flex: 1 },
+  content:    { padding: spacing.md, paddingBottom: spacing.xl },
+  card:       { backgroundColor: colors.surface, borderRadius: radius.xl, padding: spacing.md, gap: spacing.md },
+  fieldGroup: { gap: spacing.xs },
+  label:      { fontSize: typography.sizes.sm, fontWeight: '600', color: colors.text },
   input: {
     backgroundColor: colors.inputBg,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
     padding: spacing.md,
-    fontSize: typography.sizes.md
-  },
-
-  // Inline styles for web-only elements (StyleSheet doesn't apply to HTML elements)
-  webSelect: {
-    width: '100%',
-    padding: 12,
-    fontSize: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.inputBg,
-    color: colors.text,
-    cursor: 'pointer',
-  },
-
-  webDateInput: {
-    width: '100%',
-    padding: 12,
-    fontSize: 16,
-    borderRadius: 8,
-    border: `1px solid ${colors.border}`,
-    backgroundColor: colors.inputBg,
-    color: colors.text,
-    boxSizing: 'border-box',
+    fontSize: typography.sizes.md,
   },
 });

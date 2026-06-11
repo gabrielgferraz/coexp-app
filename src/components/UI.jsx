@@ -177,6 +177,7 @@ export function Divider() {
   return <View style={styles.divider} />;
 }
 
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   // Header
@@ -393,4 +394,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.borderLight,
     marginVertical: spacing.sm,
   },
+
+
+  
 });
