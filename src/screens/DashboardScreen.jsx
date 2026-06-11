@@ -14,12 +14,12 @@ import { colors, spacing, radius, typography } from '../theme';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const CHART_WIDTH = SCREEN_WIDTH - spacing.md * 2 - 2;
 
-// ─── Dados mockados ───────────────────────────────────────────────────────────
+// Dados mockados
 import { MOCK_INSUMOS, MOCK_MOVIMENTACOES } from '../data/mockData';
 
 const LIMITE_BAIXO = 6;
 
-// ─── Cálculos ─────────────────────────────────────────────────────────────────
+// calculos
 const totalInsumos = MOCK_INSUMOS.length;
 const totalEstoque = MOCK_INSUMOS.reduce((acc, i) => acc + i.qtd, 0);
 const estoqueBaixo = MOCK_INSUMOS.filter((i) => i.qtd < LIMITE_BAIXO).length;
@@ -30,7 +30,7 @@ const barData = {
   datasets: [{ data: MOCK_INSUMOS.map((i) => i.qtd) }],
 };
 
-// Dados para gráfico de pizza (por unidade)
+// Dados para gráfico de pizza
 const unidades = MOCK_INSUMOS.reduce((acc, i) => {
   acc[i.unidade] = (acc[i.unidade] || 0) + i.qtd;
   return acc;
@@ -58,7 +58,7 @@ const chartConfig = {
   },
 };
 
-// ─── Componente ───────────────────────────────────────────────────────────────
+// componentes
 export default function DashboardScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
@@ -153,7 +153,7 @@ export default function DashboardScreen({ navigation }) {
   );
 }
 
-// ─── Card de resumo ───────────────────────────────────────────────────────────
+// card de resumo
 function SummaryCard({ label, value, sub, color }) {
   return (
     <View style={[styles.card, { borderTopColor: color }]}>
@@ -164,7 +164,7 @@ function SummaryCard({ label, value, sub, color }) {
   );
 }
 
-// ─── Estilos ─────────────────────────────────────────────────────────────────
+// estilos.
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.md, paddingBottom: spacing.xl },
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
 
-  // Cards
+  // cards
   cardsRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
 
-  // Charts
+  // charts
   chartCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
   },
 
-  // Table
+  // table
   tableCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
