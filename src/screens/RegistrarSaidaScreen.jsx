@@ -1,4 +1,3 @@
-import DateTimePicker from '@react-native-community/datetimepicker';
 import React, { useEffect, useState } from 'react';
 
 import {
@@ -10,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TextInput,
 } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,9 +25,7 @@ import {
   ScreenHeader,
   NumberInput,
   PrimaryButton,
-  SelectField
 } from '../components/UI';
-
 
 import {
   collection,
@@ -40,559 +38,257 @@ import {
 import db from '../firebase/firestore';
 
 
-
 export default function RegistrarSaidaScreen({ navigation }) {
 
-
-  const [insumos,setInsumos] = useState([]);
-
-  const [insumoSelecionado,setInsumoSelecionado] = useState('');
-
-  const [quantidade,setQuantidade] = useState(1);
-
-  const [destino,setDestino] = useState('');
-
-  const [responsavel,setResponsavel] = useState('');
-
-  const [data,setData] = useState(new Date());
-
-  const [showPicker,setShowPicker] = useState(false);
+  const [insumos, setInsumos] = useState([]);
+  const [insumoSelecionado, setInsumoSelecionado] = useState('');
+  const [quantidade, setQuantidade] = useState(1);
+  const [destino, setDestino] = useState('');
+  const [responsavel, setResponsavel] = useState('');
+  const [data, setData] = useState(new Date());
 
 
-
-  useEffect(()=>{
-
-
-    async function carregarInsumos(){
-
-
-      const snapshot = await getDocs(
-        collection(db,'insumos')
-      );
-
-
-      const lista = snapshot.docs.map(doc=>({
-
-        id:doc.id,
-
-        ...doc.data()
-
-      }));
-
-
-      setInsumos(lista);
-
-
+  useEffect(() => {
+    async function carregarInsumos() {
+      try {
+        const snapshot = await getDocs(collection(db, 'insumos'));
+        const lista = snapshot.docs.map(d => ({
+          id: d.id,
+          ...d.data()
+        }));
+        setInsumos(lista);
+      } catch (error) {
+        console.log('Erro carregando insumos:', error);
+      }
     }
-
-
     carregarInsumos();
+  }, []);
 
 
-  },[]);
+  const handleConfirmar = async () => {
 
+    const insumo = insumos.find(item => item.id === insumoSelecionado);
 
-
-
-
-  const handleConfirmar = async()=>{
-
-
-    const insumo = insumos.find(
-
-      item => item.id === insumoSelecionado
-
-    );
-
-
-
-    if(!insumo){
-
-
-      Alert.alert(
-        'Atenção',
-        'Selecione um insumo.'
-      );
-
+    if (!insumo) {
+      Alert.alert('Atenção', 'Selecione um insumo.');
       return;
-
     }
 
-
-
-    if(quantidade <= 0){
-
-
-      Alert.alert(
-        'Atenção',
-        'Informe uma quantidade válida.'
-      );
-
+    if (quantidade <= 0) {
+      Alert.alert('Atenção', 'Informe uma quantidade válida.');
       return;
-
     }
 
-
-
-
-    if(quantidade > insumo.qtd){
-
-
+    if (quantidade > (insumo.qtd ?? 0)) {
       Alert.alert(
-
         'Estoque insuficiente',
-
-        `Quantidade disponível: ${insumo.qtd}`
-
+        `Quantidade disponível: ${insumo.qtd ?? 0}`
       );
-
-
       return;
-
     }
 
+    try {
+      await updateDoc(doc(db, 'insumos', insumo.id), {
+        qtd: (insumo.qtd ?? 0) - quantidade
+      });
 
-
-
-
-    try{
-
-
-      // atualiza estoque
-
-      await updateDoc(
-
-        doc(
-          db,
-          'insumos',
-          insumo.id
-        ),
-
-        {
-
-          qtd:
-          insumo.qtd - quantidade
-
-        }
-
-      );
-
-
-
-
-
-      // registra movimentação
-
-      await addDoc(
-
-        collection(db,'movimentacoes'),
-
-        {
-
-
-          insumoId:insumo.id,
-
-
-          insumoNome:insumo.nome,
-
-
-          tipo:'Saída',
-
-
-          qtd:quantidade,
-
-
-          destino,
-
-
-          responsavel,
-
-
-          data:data.toLocaleDateString('pt-BR'),
-
-
-          criadoEm:new Date()
-
-        }
-
-      );
-
-
-
-
-
+      await addDoc(collection(db, 'movimentacoes'), {
+        insumoId: insumo.id,
+        insumoNome: insumo.nome,
+        tipo: 'Saída',
+        qtd: quantidade,
+        destino,
+        responsavel,
+        data: data.toLocaleDateString('pt-BR'),
+        criadoEm: new Date()
+      });
 
       Alert.alert(
-
         'Saída registrada!',
-
         'A saída foi registrada com sucesso.',
-
-        [
-
-          {
-
-            text:'OK',
-
-            onPress:()=>navigation.goBack()
-
-          }
-
-        ]
-
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
       );
 
-
-
-    }catch(error){
-
-
-      console.log(error);
-
-
-      Alert.alert(
-        'Erro',
-        'Não foi possível registrar saída.'
-      );
-
-
+    } catch (error) {
+      console.log('Erro Firebase:', error);
+      Alert.alert('Erro', 'Não foi possível registrar saída.');
     }
-
-
-
   };
 
 
+  // Web-safe date change handler
+  const handleDateChange = (e) => {
+    const value = e.target.value; // "YYYY-MM-DD"
+    if (value) {
+      const [year, month, day] = value.split('-').map(Number);
+      setData(new Date(year, month - 1, day));
+    }
+  };
 
-
+  // Format date to YYYY-MM-DD for the web input
+  const toInputValue = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
 
 
   return (
-
     <SafeAreaView style={styles.safe}>
 
-
       <ScreenHeader
-
         title="Registrar Saída"
-
-        onBack={()=>navigation.goBack()}
-
+        onBack={() => navigation.goBack()}
       />
 
-
-
       <KeyboardAvoidingView
-
         style={styles.flex}
-
-        behavior={
-          Platform.OS === 'ios'
-          ? 'padding'
-          : 'height'
-        }
-
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-
-
         <ScrollView
-
           contentContainerStyle={styles.content}
-
+          keyboardShouldPersistTaps="handled"
         >
-
-
-
           <View style={styles.card}>
 
-
+            {/* Insumo — native <select> works on all platforms */}
             <View style={styles.fieldGroup}>
-
-
-              <Text style={styles.label}>
-                Insumo
-              </Text>
-
-
-
-              <SelectField
-
+              <Text style={styles.label}>Insumo</Text>
+              <select
                 value={insumoSelecionado}
-
-                onChange={setInsumoSelecionado}
-
-                options={
-
-                  insumos.map(item=>({
-
-                    label:
-                    `${item.nome} (${item.qtd})`,
-
-                    value:item.id
-
-                  }))
-
-                }
-
-                placeholder="Selecione o insumo..."
-
-              />
-
-
-
-            </View>
-
-
-
-
-
-            <View style={styles.fieldGroup}>
-
-
-              <Text style={styles.label}>
-                Quantidade
-              </Text>
-
-
-
-              <NumberInput
-
-                value={quantidade}
-
-                onIncrement={()=>
-                  setQuantidade(q=>q+1)
-                }
-
-                onDecrement={()=>
-                  setQuantidade(q=>Math.max(0,q-1))
-                }
-
-              />
-
-
-
-            </View>
-
-
-
-
-
-
-            <View style={styles.fieldGroup}>
-
-
-              <Text style={styles.label}>
-                Destino / Setor
-              </Text>
-
-
-
-              <TextInput
-
-                value={destino}
-
-                onChangeText={setDestino}
-
-                placeholder="Nome do setor..."
-
-                style={styles.input}
-
-              />
-
-
-            </View>
-
-
-
-
-
-
-            <View style={styles.fieldGroup}>
-
-
-              <Text style={styles.label}>
-                Responsável
-              </Text>
-
-
-
-              <TextInput
-
-                value={responsavel}
-
-                onChangeText={setResponsavel}
-
-                placeholder="Nome do responsável..."
-
-                style={styles.input}
-
-              />
-
-
-
-            </View>
-
-
-
-
-
-
-            <View style={styles.fieldGroup}>
-
-
-              <Text style={styles.label}>
-                Data da saída
-              </Text>
-
-
-
-              <TouchableOpacity
-
-                style={styles.dateButton}
-
-                onPress={()=>setShowPicker(true)}
-
+                onChange={e => setInsumoSelecionado(e.target.value)}
+                style={styles.webSelect}
               >
-
-
-                <Text style={styles.dateButtonText}>
-
-                  {data.toLocaleDateString('pt-BR')}
-
-                </Text>
-
-
-                <Text style={styles.dateChevron}>
-                  ›
-                </Text>
-
-
-              </TouchableOpacity>
-
-
-
-
-
-              {showPicker && (
-
-                <DateTimePicker
-
-                  value={data}
-
-                  mode="date"
-
-                  onChange={(e,d)=>{
-
-                    setShowPicker(false);
-
-                    if(d)
-                      setData(d);
-
-                  }}
-
-                />
-
-              )}
-
-
-
+                <option value="">Selecione o insumo...</option>
+                {insumos.map(item => (
+                  <option key={item.id} value={item.id}>
+                    {item.nome} ({item.qtd ?? 0})
+                  </option>
+                ))}
+              </select>
             </View>
 
+            {/* Quantidade */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Quantidade</Text>
+              <NumberInput
+                value={quantidade}
+                onIncrement={() => setQuantidade(q => q + 1)}
+                onDecrement={() => setQuantidade(q => Math.max(0, q - 1))}
+              />
+            </View>
 
+            {/* Destino */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Destino / Setor</Text>
+              <TextInput
+                value={destino}
+                onChangeText={setDestino}
+                placeholder="Nome do setor..."
+                style={styles.input}
+              />
+            </View>
 
+            {/* Responsável */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Responsável</Text>
+              <TextInput
+                value={responsavel}
+                onChangeText={setResponsavel}
+                placeholder="Nome do responsável..."
+                style={styles.input}
+              />
+            </View>
 
+            {/* Data — native <input type="date"> works everywhere on web */}
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Data da saída</Text>
+              <input
+                type="date"
+                value={toInputValue(data)}
+                onChange={handleDateChange}
+                style={styles.webDateInput}
+              />
+            </View>
 
             <PrimaryButton
-
               title="Confirmar saída"
-
               onPress={handleConfirmar}
-
             />
 
-
           </View>
-
-
-
         </ScrollView>
-
-
       </KeyboardAvoidingView>
 
-
-
     </SafeAreaView>
-
   );
-
-
 }
-
-
-
-
 
 
 const styles = StyleSheet.create({
 
-safe:{
-flex:1,
-backgroundColor:colors.background
-},
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background
+  },
 
-flex:{
-flex:1
-},
+  flex: {
+    flex: 1
+  },
 
-content:{
-padding:spacing.md,
-paddingBottom:spacing.xl
-},
+  content: {
+    padding: spacing.md,
+    paddingBottom: spacing.xl
+  },
 
-card:{
-backgroundColor:colors.surface,
-borderRadius:radius.xl,
-padding:spacing.md,
-gap:spacing.md
-},
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    gap: spacing.md
+  },
 
-fieldGroup:{
-gap:spacing.xs
-},
+  fieldGroup: {
+    gap: spacing.xs
+  },
 
-label:{
-fontSize:typography.sizes.sm,
-fontWeight:'600',
-color:colors.text
-},
+  label: {
+    fontSize: typography.sizes.sm,
+    fontWeight: '600',
+    color: colors.text
+  },
 
-input:{
-backgroundColor:colors.inputBg,
-borderWidth:1,
-borderColor:colors.border,
-borderRadius:radius.md,
-padding:spacing.md,
-fontSize:typography.sizes.md
-},
+  input: {
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    fontSize: typography.sizes.md
+  },
 
-dateButton:{
-flexDirection:'row',
-alignItems:'center',
-backgroundColor:colors.inputBg,
-borderWidth:1,
-borderColor:colors.border,
-borderRadius:radius.md,
-padding:spacing.md
-},
+  // Inline styles for web-only elements (StyleSheet doesn't apply to HTML elements)
+  webSelect: {
+    width: '100%',
+    padding: 12,
+    fontSize: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.inputBg,
+    color: colors.text,
+    cursor: 'pointer',
+  },
 
-dateButtonText:{
-flex:1,
-fontSize:typography.sizes.md
-},
-
-dateChevron:{
-fontSize:22
-}
-
+  webDateInput: {
+    width: '100%',
+    padding: 12,
+    fontSize: 16,
+    borderRadius: 8,
+    border: `1px solid ${colors.border}`,
+    backgroundColor: colors.inputBg,
+    color: colors.text,
+    boxSizing: 'border-box',
+  },
 });

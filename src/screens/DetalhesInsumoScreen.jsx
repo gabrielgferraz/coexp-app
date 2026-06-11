@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,8 +8,6 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { ScreenHeader } from '../components/UI';
-
-import { useEffect, useState } from 'react';
 
 import {
   collection,
@@ -23,82 +21,83 @@ import db from '../firebase/firestore';
 export default function DetalhesInsumoScreen({ navigation, route }) {
   const insumo = route.params?.insumo;
   const [movimentacoes, setMovimentacoes] = useState([]);
-  useEffect(()=>{
 
-    async function carregarMovimentacoes(){
+  // Compute stock status for circle color
+  const qtd = insumo?.qtd ?? 0;
+  const minimo = insumo?.estoqueMinimo ?? null;
+  const estoqueStatus = minimo != null; // true if minimum is defined
+  const estoqueCircleColor =
+    !estoqueStatus       ? colors.primary :
+    qtd <= 0             ? colors.danger  :
+    qtd <= minimo        ? '#F59E0B'      : // warning amber
+                           colors.accent;   // healthy green
 
-      if(!insumo?.nome) return;
+  useEffect(() => {
+    async function carregarMovimentacoes() {
+      if (!insumo?.id) return;
 
-      try{
+      try {
+        // Fixed: query by 'insumoId' field using insumo.id (not insumo.nome)
         const q = query(
-
-          collection(db,'movimentacoes'),
-
-          where(
-            'insumo',
-            '==',
-            insumo.nome
-          )
-
+          collection(db, 'movimentacoes'),
+          where('insumoId', '==', insumo.id)
         );
 
-        const snapshot =
-          await getDocs(q);
+        const snapshot = await getDocs(q);
 
-        const lista =
-          snapshot.docs.map(doc=>({
+        const lista = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
 
-            id:doc.id,
-
-            ...doc.data()
-
-          }));
+        // Sort by criadoEm descending (most recent first)
+        lista.sort((a, b) => {
+          const ta = a.criadoEm?.toMillis?.() ?? 0;
+          const tb = b.criadoEm?.toMillis?.() ?? 0;
+          return tb - ta;
+        });
 
         setMovimentacoes(lista);
 
-      }catch(error){
-        console.log(
-          "Erro buscando movimentações:",
-          error
-        );
+      } catch (error) {
+        console.log('Erro buscando movimentações:', error);
       }
-
     }
 
     carregarMovimentacoes();
-
-  },[insumo]);
+  }, [insumo]);
 
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScreenHeader
-        title={`Detalhes do ${insumo.nome}`}
+        title={`Detalhes: ${insumo?.nome ?? '—'}`}
         onBack={() => navigation.goBack()}
       />
 
       <ScrollView contentContainerStyle={styles.content}>
+
         {/* Saldo atual */}
         <View style={styles.saldoCard}>
           <Text style={styles.saldoLabel}>Saldo atual:</Text>
-          <View style={[styles.saldoCircle, estoqueStatus && { borderColor: estoqueCircleColor }]}>
-            <Text style={[styles.saldoValue, estoqueStatus && { color: estoqueCircleColor }]}>
-              {insumo.qtd ?? '—'}
+          <View style={[styles.saldoCircle, { borderColor: estoqueCircleColor }]}>
+            <Text style={[styles.saldoValue, { color: estoqueCircleColor }]}>
+              {insumo?.qtd ?? '—'}
             </Text>
           </View>
-          <Text style={styles.saldoUnidade}>{insumo.unidade ?? '—'}</Text>
+          <Text style={styles.saldoUnidade}>{insumo?.unidade ?? '—'}</Text>
 
-          {insumo.estoqueMinimo != null && (
+          {minimo != null && (
             <View style={styles.minimoContainer}>
               <Text style={styles.minimoLabel}>Est. mín.</Text>
               <Text style={[styles.minimoValue, { color: estoqueCircleColor }]}>
-                {insumo.estoqueMinimo}
+                {minimo}
               </Text>
             </View>
           )}
         </View>
 
-        {/* Movimentações filtradas */}
+        {/* Movimentações */}
         <View style={styles.tableCard}>
           <View style={[styles.tableRow, styles.tableHeader]}>
             <Text style={[styles.col, styles.colTipo, styles.headerText]}>Tipo</Text>
@@ -133,6 +132,7 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
             </View>
           )}
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
