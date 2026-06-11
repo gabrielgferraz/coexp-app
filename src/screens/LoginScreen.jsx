@@ -8,16 +8,42 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase/config';
 
 export default function LoginScreen({ navigation }) {
-  const [usuario, setUsuario] = useState('');
+  const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleEntrar = () => {
-    navigation.replace('Insumos');
+  const handleEntrar = async () => {
+    if (!email.trim() || !senha) {
+      Alert.alert('Atenção', 'Preencha o e-mail e a senha.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await signInWithEmailAndPassword(auth, email.trim(), senha);
+      navigation.replace('Insumos');
+    } catch (error) {
+      const mensagens = {
+        'auth/invalid-email':        'E-mail inválido.',
+        'auth/user-not-found':       'Usuário não encontrado.',
+        'auth/wrong-password':       'Senha incorreta.',
+        'auth/invalid-credential':   'E-mail ou senha incorretos.',
+        'auth/too-many-requests':    'Muitas tentativas. Tente novamente mais tarde.',
+        'auth/network-request-failed': 'Sem conexão com a internet.',
+      };
+      Alert.alert('Erro ao entrar', mensagens[error.code] ?? 'Erro inesperado. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -27,26 +53,30 @@ export default function LoginScreen({ navigation }) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.container}>
+
           {/* Logo */}
           <View style={styles.logoSection}>
-          <Image
-            source={require('../../assets/logo.webp')}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
+            <Image
+              source={require('../../assets/logo.webp')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+          </View>
 
           {/* Form */}
           <View style={styles.form}>
+
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Usuário</Text>
+              <Text style={styles.label}>E-mail</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Digite seu usuário..."
+                placeholder="Digite seu e-mail..."
                 placeholderTextColor={colors.textPlaceholder}
-                value={usuario}
-                onChangeText={setUsuario}
+                value={email}
+                onChangeText={setEmail}
                 autoCapitalize="none"
+                keyboardType="email-address"
+                autoCorrect={false}
               />
             </View>
 
@@ -62,9 +92,18 @@ export default function LoginScreen({ navigation }) {
               />
             </View>
 
-            <TouchableOpacity style={styles.button} onPress={handleEntrar} activeOpacity={0.85}>
-              <Text style={styles.buttonText}>Entrar</Text>
+            <TouchableOpacity
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleEntrar}
+              activeOpacity={0.85}
+              disabled={loading}
+            >
+              {loading
+                ? <ActivityIndicator color={colors.white} />
+                : <Text style={styles.buttonText}>Entrar</Text>
+              }
             </TouchableOpacity>
+
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -132,6 +171,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.4,
     shadowRadius: 6,
     elevation: 3,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
     color: colors.white,
