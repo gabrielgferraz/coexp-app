@@ -8,31 +8,67 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { ScreenHeader } from '../components/UI';
-import { MOCK_MOVIMENTACOES } from '../data/mockData';
+
+import { useEffect, useState } from 'react';
+
+import {
+  collection,
+  getDocs,
+  query,
+  where
+} from 'firebase/firestore';
+
+import db from '../firebase/firestore';
 
 export default function DetalhesInsumoScreen({ navigation, route }) {
-  const insumo = route.params?.insumo ?? { nome: 'Insumo A', qtd: 34, unidade: 'Litros', estoqueMinimo: 10 };
+  const insumo = route.params?.insumo;
+  const [movimentacoes, setMovimentacoes] = useState([]);
+  useEffect(()=>{
 
-  const estoqueStatus =
-    insumo.estoqueMinimo == null
-      ? null
-      : insumo.qtd < insumo.estoqueMinimo
-      ? 'danger'
-      : insumo.qtd === insumo.estoqueMinimo
-      ? 'warning'
-      : 'afirmative';
+    async function carregarMovimentacoes(){
 
-  const estoqueCircleColor =
-    estoqueStatus === 'danger'
-      ? colors.danger
-      : estoqueStatus === 'warning'
-      ? colors.warning
-      : colors.afirmative;
+      if(!insumo?.nome) return;
 
-  // Filtra somente as movimentações deste insumo
-  const movimentacoes = MOCK_MOVIMENTACOES.filter(
-    (m) => m.insumo === insumo.nome
-  );
+      try{
+        const q = query(
+
+          collection(db,'movimentacoes'),
+
+          where(
+            'insumo',
+            '==',
+            insumo.nome
+          )
+
+        );
+
+        const snapshot =
+          await getDocs(q);
+
+        const lista =
+          snapshot.docs.map(doc=>({
+
+            id:doc.id,
+
+            ...doc.data()
+
+          }));
+
+        setMovimentacoes(lista);
+
+      }catch(error){
+        console.log(
+          "Erro buscando movimentações:",
+          error
+        );
+      }
+
+    }
+
+    carregarMovimentacoes();
+
+  },[insumo]);
+
 
   return (
     <SafeAreaView style={styles.safe}>

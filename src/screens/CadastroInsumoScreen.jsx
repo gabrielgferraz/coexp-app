@@ -8,121 +8,326 @@ import {
   Platform,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader, InputField, SelectField, NumberInput, PrimaryButton } from '../components/UI';
 
-const UNIDADES = ['Litros', 'Kg', 'Un', 'Caixas', 'Metros', 'Gramas'];
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import {
+  colors,
+  spacing,
+  radius,
+  typography
+} from '../theme';
+
+import {
+  ScreenHeader,
+  InputField,
+  SelectField,
+  NumberInput,
+  PrimaryButton
+} from '../components/UI';
+
+
+// Firebase
+import {
+  addDoc,
+  collection
+} from 'firebase/firestore';
+
+import db from '../firebase/firestore';
+
+
+const UNIDADES = [
+  'Litros',
+  'Kg',
+  'Un',
+  'Caixas',
+  'Metros',
+  'Gramas'
+];
+
 
 export default function CadastroInsumoScreen({ navigation }) {
-  const [nome, setNome]                   = useState('');
-  const [unidade, setUnidade]             = useState('');
+
+
+  const [nome, setNome] = useState('');
+  const [unidade, setUnidade] = useState('');
   const [estoqueMinimo, setEstoqueMinimo] = useState(1);
 
-  const handleCadastrar = () => {
+
+  const handleCadastrar = async () => {
+
+
     if (!nome.trim()) {
-      Alert.alert('Atenção', 'Informe o nome do insumo.');
+      Alert.alert(
+        'Atenção',
+        'Informe o nome do insumo.'
+      );
       return;
     }
+
+
     if (!unidade) {
-      Alert.alert('Atenção', 'Selecione a unidade de medida.');
+      Alert.alert(
+        'Atenção',
+        'Selecione a unidade de medida.'
+      );
       return;
     }
 
-    const novoInsumo = {
-      id: String(Date.now()),
-      nome: nome.trim(),
-      unidade,
-      estoqueMinimo,
-    };
 
 
-    Alert.alert('Insumo cadastrado!', `"${nome.trim()}" foi adicionado com sucesso.`, [
-      { text: 'OK' },
-    ]);
+    try {
 
-    setNome('');
-    setUnidade('');
-    setEstoqueMinimo(1);
+
+      const novoInsumo = {
+
+        nome: nome.trim(),
+
+        unidade,
+
+        estoqueMinimo,
+
+        criadoEm: new Date()
+
+      };
+
+
+
+      await addDoc(
+        collection(db, 'insumos'),
+        novoInsumo
+      );
+
+
+
+      Alert.alert(
+        'Insumo cadastrado!',
+        `"${nome.trim()}" foi adicionado com sucesso.`,
+        [
+          {
+            text: 'OK'
+          }
+        ]
+      );
+
+
+
+      // limpa formulário
+
+      setNome('');
+
+      setUnidade('');
+
+      setEstoqueMinimo(1);
+
+
+
+    } catch(error) {
+
+
+      console.log(
+        "Erro Firebase:",
+        error
+      );
+
+
+      Alert.alert(
+        'Erro',
+        'Não foi possível cadastrar o insumo.'
+      );
+
+    }
+
   };
 
+
+
   return (
+
     <SafeAreaView style={styles.safe}>
-      <ScreenHeader title="Cadastro de Insumo" onBack={() => navigation.goBack()} />
+
+      <ScreenHeader
+        title="Cadastro de Insumo"
+        onBack={() => navigation.goBack()}
+      />
+
 
       <KeyboardAvoidingView
+
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+
+        behavior={
+          Platform.OS === 'ios'
+            ? 'padding'
+            : 'height'
+        }
+
       >
+
+
         <ScrollView
+
           contentContainerStyle={styles.content}
+
           keyboardShouldPersistTaps="handled"
+
         >
+
+
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Novo insumo</Text>
+
+
+            <Text style={styles.cardTitle}>
+              Novo insumo
+            </Text>
+
+
 
             <View style={styles.fieldGroup}>
+
               <InputField
+
                 label="Nome do insumo"
+
                 placeholder="Ex: Álcool Isopropílico..."
+
                 value={nome}
+
                 onChangeText={setNome}
+
               />
+
             </View>
 
+
+
+
             <View style={styles.fieldGroup}>
+
+
               <SelectField
+
                 label="Unidade de medida"
+
                 value={unidade}
+
                 onChange={setUnidade}
+
                 options={UNIDADES}
+
                 placeholder="Selecione a unidade..."
+
               />
+
+
             </View>
+
+
+
 
             <View style={styles.fieldGroup}>
+
+
               <NumberInput
+
                 label="Estoque mínimo"
+
                 value={estoqueMinimo}
-                onIncrement={() => setEstoqueMinimo((v) => v + 1)}
-                onDecrement={() => setEstoqueMinimo((v) => Math.max(0, v - 1))}
+
+                onIncrement={
+                  () =>
+                  setEstoqueMinimo(
+                    (v)=>v+1
+                  )
+                }
+
+                onDecrement={
+                  () =>
+                  setEstoqueMinimo(
+                    (v)=>Math.max(0,v-1)
+                  )
+                }
+
               />
+
+
             </View>
 
-            <PrimaryButton title="Cadastrar insumo" onPress={handleCadastrar} />
+
+
+
+            <PrimaryButton
+
+              title="Cadastrar insumo"
+
+              onPress={handleCadastrar}
+
+            />
+
+
+
           </View>
+
+
         </ScrollView>
+
+
       </KeyboardAvoidingView>
+
+
     </SafeAreaView>
+
   );
+
 }
 
+
+
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  flex: { flex: 1 },
-  content: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl,
-    gap: spacing.md,
+
+  safe: {
+    flex:1,
+    backgroundColor:colors.background
   },
 
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.xl,
-    padding: spacing.md,
-    gap: spacing.md,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 10,
-    elevation: 3,
+
+  flex:{
+    flex:1
   },
-  cardTitle: {
-    fontSize: typography.sizes.md,
-    fontWeight: '600',
-    color: colors.text,
+
+
+  content:{
+    padding:spacing.md,
+    paddingBottom:spacing.xl,
+    gap:spacing.md
   },
-  fieldGroup: {
-    gap: spacing.xs,
+
+
+  card:{
+    backgroundColor:colors.surface,
+    borderRadius:radius.xl,
+    padding:spacing.md,
+    gap:spacing.md,
+    shadowColor:colors.shadow,
+    shadowOffset:{
+      width:0,
+      height:2
+    },
+    shadowOpacity:1,
+    shadowRadius:10,
+    elevation:3
   },
+
+
+  cardTitle:{
+    fontSize:typography.sizes.md,
+    fontWeight:'600',
+    color:colors.text
+  },
+
+
+  fieldGroup:{
+    gap:spacing.xs
+  }
+
 });

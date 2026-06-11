@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,309 +6,337 @@ import {
   StyleSheet,
   ScrollView,
 } from 'react-native';
-import { IconUserCircle, IconLogout} from '@tabler/icons-react-native'
+
+import { IconUserCircle, IconLogout } from '@tabler/icons-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
 import { colors, spacing, radius, typography } from '../theme';
-import { SearchBar} from '../components/UI';
-import { MOCK_INSUMOS } from '../data/mockData.js';
+import { SearchBar } from '../components/UI';
+
+import { collection, getDocs } from 'firebase/firestore';
+import db from '../firebase/firestore';
 
 export default function InsumosScreen({ navigation }) {
   const [search, setSearch] = useState('');
+  const [insumos, setInsumos] = useState([]);
 
-  const insumosFiltrados = MOCK_INSUMOS.filter(
-  (item) =>
-    item.nome !== '—' &&
-    item.nome.toLowerCase().includes(search.toLowerCase())
+  useEffect(() => {
+    async function carregarInsumos() {
+      try {
+        const snapshot = await getDocs(collection(db, 'insumos'));
+
+        const lista = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+
+        setInsumos(lista);
+      } catch (error) {
+        console.log('Erro ao carregar insumos:', error);
+      }
+    }
+
+    carregarInsumos();
+  }, []);
+
+  const insumosFiltrados = insumos.filter(item =>
+    item.nome?.toLowerCase().includes(search.toLowerCase())
   );
-
-  const handleEntrada = () => navigation.navigate('RegistrarEntrada');
-  const handleSaida = () => navigation.navigate('RegistrarSaida');
-  const handleGestao = () => navigation.navigate('GestaoAcessos');
-  const handleDashboard = () => navigation.navigate('Dashboard');
-  const handleLogout = () => navigation.navigate('Login');
-  const handleCadastrar = () => navigation.navigate('CadastroInsumo');
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Header */}
+
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Insumos COEXP</Text>
+        <Text style={styles.headerTitle}>
+          Insumos COEXP
+        </Text>
+
         <View style={styles.headerActions}>
-          <TouchableOpacity onPress={handleGestao} style={styles.iconBtn}>
-            <IconUserCircle size={20} color="#000000" strokeWidth={1.5} />
+          <TouchableOpacity
+            onPress={() => navigation.navigate('GestaoAcessos')}
+            style={styles.iconBtn}
+          >
+            <IconUserCircle size={20} color="#000" strokeWidth={1.5} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleDashboard} style={styles.gestaoBtn}>
-            <Text style={styles.gestaoBtnText}>📊</Text>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Dashboard')}
+            style={styles.iconBtn}
+          >
+            <Text>📊</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={handleLogout} style={styles.iconBtn}>
-            <IconLogout size={20} color="#000000" strokeWidth={1.5} />
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Login')}
+            style={styles.iconBtn}
+          >
+            <IconLogout size={20} color="#000" strokeWidth={1.5} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-        {/* Ação buttons */}
-        <View style={{ marginBottom: spacing.md }}>
-          <SearchBar value={search} onChangeText={setSearch} />
-        </View>
+
+      <ScrollView
+        style={styles.scroll}
+        contentContainerStyle={styles.content}
+      >
+
+        <SearchBar
+          value={search}
+          onChangeText={setSearch}
+        />
+
 
         <TouchableOpacity
-            style={[styles.actionBtn, styles.actionBtnCadastrar]}
-            onPress={handleCadastrar}
-            activeOpacity={0.75}
-          >
-            <Text style={styles.actionBtnIcon}>+</Text>
-            <Text style={styles.actionBtnText}>Cadastrar Insumo</Text>
-          </TouchableOpacity>
+          style={[styles.actionBtn, styles.cadastrar]}
+          onPress={() => navigation.navigate('CadastroInsumo')}
+        >
+          <Text style={styles.btnText}>
+            + Cadastrar Insumo
+          </Text>
+        </TouchableOpacity>
+
 
         <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={[styles.actionBtn, styles.actionBtnEntrada]}
-            onPress={handleEntrada}
-            activeOpacity={0.75}
-          >
-            <Text style={styles.actionBtnIcon}>↓</Text>
-            <Text style={styles.actionBtnText}>Registrar Entrada</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionBtn, styles.actionBtnSaida]}
-            onPress={handleSaida}
-            activeOpacity={0.75}
+            style={[styles.actionBtn, styles.entrada]}
+            onPress={() => navigation.navigate('RegistrarEntrada')}
           >
-            <Text style={styles.actionBtnIcon}>↑</Text>
-            <Text style={styles.actionBtnText}>Registrar Saída</Text>
+            <Text style={styles.btnText}>
+              ↓ Registrar Entrada
+            </Text>
           </TouchableOpacity>
+
+
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.saida]}
+            onPress={() => navigation.navigate('RegistrarSaida')}
+          >
+            <Text style={styles.btnText}>
+              ↑ Registrar Saída
+            </Text>
+          </TouchableOpacity>
+
         </View>
 
-        {/* Tabela de Insumos */}
+
         <View style={styles.tableCard}>
-          {/* Table Header */}
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <Text style={[styles.tableCell, styles.tableHeaderText, styles.cellFlex]}>
-              Nome do Insumo
+
+          <View style={[styles.row, styles.headerRow]}>
+            <Text style={[styles.cell, styles.flex, styles.headerText]}>
+              Nome
             </Text>
-            <Text style={[styles.tableCell, styles.tableHeaderText, styles.cellSmall]}>Qtd.</Text>
-            <Text style={[styles.tableCell, styles.tableHeaderText, styles.cellSmall]}>Mín.</Text>
-            <Text style={[styles.tableCell, styles.tableHeaderText, styles.cellMedium]}>
+
+            <Text style={[styles.cell, styles.small, styles.headerText]}>
+              Qtd
+            </Text>
+
+            <Text style={[styles.cell, styles.small, styles.headerText]}>
+              Mín
+            </Text>
+
+            <Text style={[styles.cell, styles.medium, styles.headerText]}>
               Unidade
             </Text>
           </View>
 
-          {/* Table Rows */}
-          {insumosFiltrados.length > 0 ? (
-          insumosFiltrados.map((item, idx) => (
-            <TouchableOpacity
-              key={item.id}
-              style={[styles.tableRow, idx % 2 === 1 && styles.tableRowAlt]}
-              onPress={() => navigation.navigate('DetalhesInsumo', { insumo: item })}
-              activeOpacity={0.7}
-            >
-              <Text style={[styles.tableCell, styles.cellFlex, styles.tableCellText]}>
-                {item.nome}
+
+          {insumosFiltrados.length ? (
+
+            insumosFiltrados.map((item, index) => (
+
+              <TouchableOpacity
+                key={item.id}
+                style={[
+                  styles.row,
+                  index % 2 === 1 && styles.altRow
+                ]}
+                onPress={() =>
+                  navigation.navigate(
+                    'DetalhesInsumo',
+                    { insumo:item }
+                  )
+                }
+              >
+
+                <Text style={[styles.cell, styles.flex]}>
+                  {item.nome}
+                </Text>
+
+                <Text style={[
+                  styles.cell,
+                  styles.small,
+                  item.qtd < item.estoqueMinimo
+                    ? styles.danger
+                    : styles.ok
+                ]}>
+                  {item.qtd ?? 0}
+                </Text>
+
+                <Text style={[styles.cell, styles.small]}>
+                  {item.estoqueMinimo ?? '-'}
+                </Text>
+
+                <Text style={[styles.cell, styles.medium]}>
+                  {item.unidade}
+                </Text>
+
+              </TouchableOpacity>
+
+            ))
+
+          ) : (
+
+            <View style={styles.empty}>
+              <Text>
+                Nenhum insumo encontrado.
               </Text>
-              <Text style={[
-                styles.tableCell,
-                styles.cellSmall,
-                styles.tableCellText,
-                styles.qtdBadge,
-                item.qtd < item.estoqueMinimo
-                  ? styles.qtdDanger
-                  : item.qtd === item.estoqueMinimo
-                  ? styles.qtdWarning
-                  : styles.qtdAfirmative,
-              ]}>
-                {item.qtd}
-              </Text>
-              <Text style={[styles.tableCell, styles.cellSmall, styles.tableCellText]}>
-                {item.estoqueMinimo ?? '—'}
-              </Text>
-              <Text style={[styles.tableCell, styles.cellMedium, styles.tableCellText]}>
-                {item.unidade}
-              </Text>
-            </TouchableOpacity>
-          ))
-        ) : (
-          <View style={styles.emptyRow}>
-            <Text style={styles.emptyText}>Nenhum insumo encontrado.</Text>
-          </View>
-        )}
+            </View>
+
+          )}
+
         </View>
+
       </ScrollView>
+
     </SafeAreaView>
   );
 }
 
+
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    backgroundColor: colors.primary,
-  },
-  headerTitle: {
-    flex: 1,
-    left: 0,
-    right: 0,
-    position: 'absolute',
-    textAlign: 'center',     
-    fontSize: typography.sizes.md,
-    fontWeight: '700',
-    color: colors.white,
-  },
-    headerActions: {
-      flexDirection: 'row',
-      gap: spacing.xs,
-  },
-  iconBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gestaoBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  gestaoBtnText: {
-    fontSize: 16,
-  },
-  scroll: { flex: 1 },
-  scrollContent: {
-    padding: spacing.md,
-    paddingBottom: spacing.xl,
-  },
-  actionRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
-  actionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: spacing.md,
-    borderRadius: radius.md,
-    borderWidth: 2,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  actionBtnEntrada: {
-    backgroundColor: colors.afirmative,
-    borderColor: colors.afirmativeLight,
-    shadowColor: 'rgba(26, 58, 42, 0.12)',
-  },
-  actionBtnCadastrar: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primaryLight,
-    shadowColor: 'rgba(26, 58, 42, 0.12)',
-    marginBottom: spacing.md,
-  },
-  actionBtnSaida: {
-    backgroundColor: colors.danger,
-    borderColor: colors.dangerLight,
-    shadowColor: colors.shadow,
-  },
-  actionBtnIcon: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.white,
-  },
-  actionBtnText: {
-    fontSize: typography.sizes.md,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-    color: colors.white,
+
+  safe:{
+    flex:1,
+    backgroundColor:colors.background,
   },
 
-  // Table
-  tableCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    overflow: 'hidden',
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 2,
+  header:{
+    flexDirection:'row',
+    justifyContent:'space-between',
+    alignItems:'center',
+    backgroundColor:colors.primary,
+    padding:spacing.md,
   },
-  tableRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+
+  headerTitle:{
+    color:colors.white,
+    fontWeight:'700',
+    fontSize:typography.sizes.md,
   },
-  tableRowAlt: {
-    backgroundColor: colors.tableRowAlt,
+
+  headerActions:{
+    flexDirection:'row',
+    gap:spacing.xs,
   },
-  tableHeader: {
-    backgroundColor: colors.primary,
-    borderBottomWidth: 0,
+
+  iconBtn:{
+    width:34,
+    height:34,
+    borderRadius:17,
+    backgroundColor:colors.white,
+    justifyContent:'center',
+    alignItems:'center',
   },
-  tableHeaderText: {
-    color: colors.white,
-    fontWeight: '700',
-    fontSize: typography.sizes.xs,
-    letterSpacing: 0.3,
-    textTransform: 'uppercase',
+
+  scroll:{
+    flex:1,
   },
-  tableCell: {
-    fontSize: typography.sizes.sm,
+
+  content:{
+    padding:spacing.md,
+    gap:spacing.md,
   },
-  tableCellText: {
-    color: colors.text,
+
+  actionRow:{
+    flexDirection:'row',
+    gap:spacing.sm,
   },
-  cellFlex: {
-    flex: 1,
+
+  actionBtn:{
+    flex:1,
+    padding:spacing.md,
+    borderRadius:radius.md,
+    alignItems:'center',
   },
-  cellSmall: {
-    width: 40,
-    textAlign: 'center',
+
+  cadastrar:{
+    backgroundColor:colors.primary,
   },
-  cellMedium: {
-    width: 70,
-    textAlign: 'right',
+
+  entrada:{
+    backgroundColor:colors.afirmative,
   },
-  qtdBadge: {
-    fontWeight: '700',
-    borderRadius: 4,
-    overflow: 'hidden',
-    paddingVertical: 1,
+
+  saida:{
+    backgroundColor:colors.danger,
   },
-  qtdDanger: {
-    color: colors.danger,
+
+  btnText:{
+    color:colors.white,
+    fontWeight:'700',
   },
-  qtdWarning: {
-    color: colors.warning,
+
+  tableCard:{
+    backgroundColor:colors.surface,
+    borderRadius:radius.lg,
+    overflow:'hidden',
   },
-  qtdAfirmative: {
-    color: colors.afirmative,
+
+  row:{
+    flexDirection:'row',
+    alignItems:'center',
+    padding:spacing.sm,
+    borderBottomWidth:1,
+    borderBottomColor:colors.borderLight,
   },
-  emptyRow: {
-    padding: spacing.lg,
-    alignItems: 'center',
+
+  headerRow:{
+    backgroundColor:colors.primary,
   },
-  emptyText: {
-    color: colors.textSecondary,
-    fontSize: typography.sizes.sm,
-    fontStyle: 'italic',
+
+  altRow:{
+    backgroundColor:colors.tableRowAlt,
   },
+
+  cell:{
+    fontSize:typography.sizes.sm,
+    color:colors.text,
+  },
+
+  headerText:{
+    color:colors.white,
+    fontWeight:'700',
+  },
+
+  flex:{
+    flex:1,
+  },
+
+  small:{
+    width:40,
+    textAlign:'center',
+  },
+
+  medium:{
+    width:70,
+    textAlign:'right',
+  },
+
+  danger:{
+    color:colors.danger,
+    fontWeight:'700',
+  },
+
+  ok:{
+    color:colors.afirmative,
+    fontWeight:'700',
+  },
+
+  empty:{
+    padding:spacing.lg,
+    alignItems:'center',
+  },
+
 });
