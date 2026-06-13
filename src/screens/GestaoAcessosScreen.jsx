@@ -303,7 +303,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: spacing.sm + 2,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.sm,
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
   col:     { fontSize: typography.sizes.sm },
   colNome: { flex: 1 },
   colPerm: { width: 80, alignItems: 'center' },
-  colAcao: { width: 36, alignItems: 'center' },
+  colAcao: { width: 52, alignItems: 'center' },
 
   cellText: { color: colors.text, fontSize: typography.sizes.sm, fontWeight: '500' },
   cellSub:  { color: colors.textSecondary, fontSize: typography.sizes.xs, marginTop: 1 },
