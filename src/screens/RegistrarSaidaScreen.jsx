@@ -7,11 +7,12 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  TouchableOpacity,
   TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader, NumberInput, PrimaryButton } from '../components/UI';
+import { ScreenHeader, PrimaryButton } from '../components/UI';
 import NativePicker from '../components/NativePicker';
 import NativeDatePicker from '../components/NativeDatePicker';
 import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
@@ -106,11 +107,32 @@ export default function RegistrarSaidaScreen({ navigation }) {
 
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Quantidade</Text>
-              <NumberInput
-                value={quantidade}
-                onIncrement={() => setQuantidade(q => q + 1)}
-                onDecrement={() => setQuantidade(q => Math.max(0, q - 1))}
-              />
+              <View style={styles.quantidadeRow}>
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => setQuantidade(q => Math.max(0, q - 1))}
+                >
+                  <Text style={styles.qtyBtnText}>−</Text>
+                </TouchableOpacity>
+
+                <TextInput
+                  style={styles.qtyInput}
+                  value={String(quantidade)}
+                  onChangeText={text => {
+                    const parsed = parseInt(text.replace(/[^0-9]/g, ''), 10);
+                    setQuantidade(isNaN(parsed) ? 0 : parsed);
+                  }}
+                  keyboardType="numeric"
+                  textAlign="center"
+                />
+
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => setQuantidade(q => q + 1)}
+                >
+                  <Text style={styles.qtyBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.fieldGroup}>
@@ -155,6 +177,36 @@ const styles = StyleSheet.create({
   card:       { backgroundColor: colors.surface, borderRadius: radius.xl, padding: spacing.md, gap: spacing.md },
   fieldGroup: { gap: spacing.xs },
   label:      { fontSize: typography.sizes.sm, fontWeight: '600', color: colors.text },
+  quantidadeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  qtyBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qtyBtnText: {
+    fontSize: 22,
+    color: colors.text,
+    lineHeight: 26,
+  },
+  qtyInput: {
+    flex: 1,
+    height: 44,
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    fontSize: typography.sizes.md,
+    color: colors.text,
+  },
   input: {
     backgroundColor: colors.inputBg,
     borderWidth: 1,

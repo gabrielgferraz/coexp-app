@@ -6,11 +6,13 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  TouchableOpacity,
+  TextInput,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader, InputField, NumberInput, PrimaryButton } from '../components/UI';
+import { ScreenHeader, InputField, PrimaryButton } from '../components/UI';
 import NativePicker from '../components/NativePicker';
 import { addDoc, collection } from 'firebase/firestore';
 import db from '../firebase/firestore';
@@ -86,12 +88,33 @@ export default function CadastroInsumoScreen({ navigation }) {
             </View>
 
             <View style={styles.fieldGroup}>
-              <NumberInput
-                label="Estoque mínimo"
-                value={estoqueMinimo}
-                onIncrement={() => setEstoqueMinimo(v => v + 1)}
-                onDecrement={() => setEstoqueMinimo(v => Math.max(0, v - 1))}
-              />
+              <Text style={styles.label}>Estoque mínimo</Text>
+              <View style={styles.quantidadeRow}>
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => setEstoqueMinimo(q => Math.max(0, q - 1))}
+                >
+                  <Text style={styles.qtyBtnText}>−</Text>
+                </TouchableOpacity>
+
+                <TextInput
+                  style={styles.qtyInput}
+                  value={String(estoqueMinimo)}
+                  onChangeText={text => {
+                    const parsed = parseInt(text.replace(/[^0-9]/g, ''), 10);
+                    setEstoqueMinimo(isNaN(parsed) ? 0 : parsed);
+                  }}
+                  keyboardType="numeric"
+                  textAlign="center"
+                />
+
+                <TouchableOpacity
+                  style={styles.qtyBtn}
+                  onPress={() => setEstoqueMinimo(q => q + 1)}
+                >
+                  <Text style={styles.qtyBtnText}>+</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <PrimaryButton title="Cadastrar insumo" onPress={handleCadastrar} />
@@ -122,4 +145,34 @@ const styles = StyleSheet.create({
   cardTitle:  { fontSize: typography.sizes.md, fontWeight: '600', color: colors.text },
   fieldGroup: { gap: spacing.xs },
   label:      { fontSize: typography.sizes.sm, fontWeight: '600', color: colors.text },
+  quantidadeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  qtyBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.md,
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  qtyBtnText: {
+    fontSize: 22,
+    color: colors.text,
+    lineHeight: 26,
+  },
+  qtyInput: {
+    flex: 1,
+    height: 44,
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    fontSize: typography.sizes.md,
+    color: colors.text,
+  },
 });
