@@ -1,151 +1,148 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { BarChart, PieChart } from 'react-native-chart-kit';
+import { useFocusEffect } from '@react-navigation/native';
 import { ScreenHeader } from '../components/UI';
 import { colors, spacing, radius, typography } from '../theme';
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const CHART_WIDTH = SCREEN_WIDTH - spacing.md * 2 - 2;
-
-// Dados mockados
-import { MOCK_INSUMOS, MOCK_MOVIMENTACOES } from '../data/mockData';
-
-const LIMITE_BAIXO = 6;
-
-// calculos
-const totalInsumos = MOCK_INSUMOS.length;
-const totalEstoque = MOCK_INSUMOS.reduce((acc, i) => acc + i.qtd, 0);
-const estoqueBaixo = MOCK_INSUMOS.filter((i) => i.qtd < LIMITE_BAIXO).length;
-
-// Dados para gráfico de barras
-const barData = {
-  labels: MOCK_INSUMOS.map((i) => i.nome.replace('Insumo ', '')),
-  datasets: [{ data: MOCK_INSUMOS.map((i) => i.qtd) }],
-};
-
-// Dados para gráfico de pizza
-const unidades = MOCK_INSUMOS.reduce((acc, i) => {
-  acc[i.unidade] = (acc[i.unidade] || 0) + i.qtd;
-  return acc;
-}, {});
+import { BarChartComp, PieChartComp } from '../components/Charts';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import db from '../firebase/firestore';
 
 const PIE_COLORS = ['#1A3A2A', '#4CAF50', '#81C784', '#FF8F00', '#42A5F5'];
-const pieData = Object.entries(unidades).map(([name, population], idx) => ({
-  name,
-  population,
-  color: PIE_COLORS[idx % PIE_COLORS.length],
-  legendFontColor: colors.text,
-  legendFontSize: 13,
-}));
 
-const chartConfig = {
-  backgroundGradientFrom: colors.surface,
-  backgroundGradientTo: colors.surface,
-  color: (opacity = 1) => `rgba(26, 58, 42, ${opacity})`,
-  labelColor: () => colors.textSecondary,
-  barPercentage: 0.6,
-  decimalPlaces: 0,
-  propsForBackgroundLines: {
-    stroke: colors.borderLight,
-    strokeDasharray: '',
-  },
-};
-
-// componentes
 export default function DashboardScreen({ navigation }) {
+  const [insumos,       setInsumos]       = useState([]);
+  const [movimentacoes, setMovimentacoes] = useState([]);
+  const [loading,       setLoading]       = useState(true);
+
+  useFocusEffect(
+    useCallback(() => {
+      async function carregar() {
+        setLoading(true);
+        try {
+          const insSnap = await getDocs(collection(db, 'insumos'));
+          setInsumos(insSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+
+          const movQ = query(
+            collection(db, 'movimentacoes'),
+            orderBy('criadoEm', 'desc'),
+            limit(20)
+          );
+          const movSnap = await getDocs(movQ);
+          setMovimentacoes(movSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        } catch (e) {
+          console.log('Erro dashboard:', e);
+        } finally {
+          setLoading(false);
+        }
+      }
+      carregar();
+    }, [])
+  );
+
+  // Computed values
+  const totalInsumos = insumos.length;
+  const totalEstoque = insumos.reduce((acc, i) => acc + (i.qtd ?? 0), 0);
+  const estoqueBaixo = insumos.filter(
+    i => i.estoqueMinimo != null && (i.qtd ?? 0) < i.estoqueMinimo
+  ).length;
+
+  const barInsumos = insumos.slice(0, 8);
+
+  const unidades = insumos.reduce((acc, i) => {
+    acc[i.unidade] = (acc[i.unidade] || 0) + (i.qtd ?? 0);
+    return acc;
+  }, {});
+  const pieData = Object.entries(unidades).map(([name, value], idx) => ({
+    name,
+    value,
+    color: PIE_COLORS[idx % PIE_COLORS.length],
+  }));
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <ScreenHeader title="Dashboard" onBack={() => navigation.goBack()} />
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Carregando dados...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScreenHeader title="Dashboard" onBack={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.content}>
 
-        {/* ── Cards de resumo ── */}
+        {/* Summary cards */}
         <Text style={styles.sectionTitle}>Visão Geral</Text>
         <View style={styles.cardsRow}>
-          <SummaryCard
-            label="Insumos"
-            value={totalInsumos}
-            sub="cadastrados"
-            color={colors.primary}
-          />
-          <SummaryCard
-            label="Em Estoque"
-            value={totalEstoque}
-            sub="unidades totais"
-            color={colors.accent}
-          />
-          <SummaryCard
-            label="Estoque Baixo"
-            value={estoqueBaixo}
-            sub={`abaixo de ${LIMITE_BAIXO}`}
-            color={estoqueBaixo > 0 ? colors.danger : colors.accent}
-          />
+          <SummaryCard label="Insumos"       value={totalInsumos} sub="cadastrados"       color={colors.primary} />
+          <SummaryCard label="Em Estoque"    value={totalEstoque} sub="unidades totais"   color={colors.accent}  />
+          <SummaryCard label="Estoque Baixo" value={estoqueBaixo} sub="abaixo do mínimo"
+            color={estoqueBaixo > 0 ? colors.danger : colors.accent} />
         </View>
 
-        {/* ── Gráfico de barras ── */}
-        <Text style={styles.sectionTitle}>Quantidade por Insumo</Text>
-        <View style={styles.chartCard}>
-          <BarChart
-            data={barData}
-            width={CHART_WIDTH}
-            height={200}
-            chartConfig={chartConfig}
-            fromZero
-            showValuesOnTopOfBars
-            withInnerLines
-            style={styles.chart}
-          />
-        </View>
+        {/* Bar chart */}
+        {barInsumos.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Quantidade por Insumo</Text>
+            <View style={styles.chartCard}>
+              <BarChartComp data={barInsumos} />
+            </View>
+          </>
+        )}
 
-        {/* ── Gráfico de pizza ── */}
-        <Text style={styles.sectionTitle}>Distribuição por Unidade</Text>
-        <View style={styles.chartCard}>
-          <PieChart
-            data={pieData}
-            width={CHART_WIDTH}
-            height={180}
-            chartConfig={chartConfig}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="16"
-            style={styles.chart}
-          />
-        </View>
+        {/* Pie chart */}
+        {pieData.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>Distribuição por Unidade</Text>
+            <View style={styles.chartCard}>
+              <PieChartComp data={pieData} />
+            </View>
+          </>
+        )}
 
-        {/* ── Movimentações recentes ── */}
+        {/* Recent movimentações */}
         <Text style={styles.sectionTitle}>Movimentações Recentes</Text>
         <View style={styles.tableCard}>
           <View style={[styles.tableRow, styles.tableHeader]}>
-            <Text style={[styles.col, styles.colTipo,  styles.headerText]}>Tipo</Text>
-            <Text style={[styles.col, styles.colInsumo,styles.headerText]}>Insumo</Text>
-            <Text style={[styles.col, styles.colQtd,   styles.headerText]}>Qtd</Text>
-            <Text style={[styles.col, styles.colData,  styles.headerText]}>Data</Text>
-            <Text style={[styles.col, styles.colResp,  styles.headerText]}>Resp.</Text>
+            <Text style={[styles.col, styles.colTipo,   styles.headerText]}>Tipo</Text>
+            <Text style={[styles.col, styles.colInsumo, styles.headerText]}>Insumo</Text>
+            <Text style={[styles.col, styles.colQtd,    styles.headerText]}>Qtd</Text>
+            <Text style={[styles.col, styles.colData,   styles.headerText]}>Data</Text>
+            <Text style={[styles.col, styles.colResp,   styles.headerText]}>Resp.</Text>
           </View>
 
-          {MOCK_MOVIMENTACOES.map((item, idx) => (
-            <View key={idx} style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}>
-              <Text
-                style={[
+          {movimentacoes.length === 0 ? (
+            <View style={styles.emptyRow}>
+              <Text style={styles.emptyText}>Nenhuma movimentação registrada.</Text>
+            </View>
+          ) : (
+            movimentacoes.map((item, idx) => (
+              <View key={item.id} style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}>
+                <Text style={[
                   styles.col, styles.colTipo, styles.cellText,
                   item.tipo === 'Entrada' ? styles.entradaText : styles.saidaText,
-                ]}
-              >
-                {item.tipo}
-              </Text>
-              <Text style={[styles.col, styles.colInsumo, styles.cellText]}>{item.insumo}</Text>
-              <Text style={[styles.col, styles.colQtd,    styles.cellText]}>{item.qtd}</Text>
-              <Text style={[styles.col, styles.colData,   styles.cellText]}>{item.data}</Text>
-              <Text style={[styles.col, styles.colResp,   styles.cellText]}>{item.responsavel}</Text>
-            </View>
-          ))}
+                ]}>
+                  {item.tipo}
+                </Text>
+                <Text style={[styles.col, styles.colInsumo, styles.cellText]}>{item.insumoNome}</Text>
+                <Text style={[styles.col, styles.colQtd,    styles.cellText]}>{item.qtd}</Text>
+                <Text style={[styles.col, styles.colData,   styles.cellText]}>{item.data}</Text>
+                <Text style={[styles.col, styles.colResp,   styles.cellText]}>{item.responsavel}</Text>
+              </View>
+            ))
+          )}
         </View>
 
       </ScrollView>
@@ -153,7 +150,6 @@ export default function DashboardScreen({ navigation }) {
   );
 }
 
-// card de resumo
 function SummaryCard({ label, value, sub, color }) {
   return (
     <View style={[styles.card, { borderTopColor: color }]}>
@@ -164,10 +160,11 @@ function SummaryCard({ label, value, sub, color }) {
   );
 }
 
-// estilos.
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  content: { padding: spacing.md, paddingBottom: spacing.xl },
+  safe:        { flex: 1, backgroundColor: colors.background },
+  content:     { padding: spacing.md, paddingBottom: spacing.xl },
+  centered:    { flex: 1, justifyContent: 'center', alignItems: 'center', gap: spacing.md },
+  loadingText: { color: colors.textSecondary, fontSize: typography.sizes.sm },
 
   sectionTitle: {
     fontSize: typography.sizes.md,
@@ -178,12 +175,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
 
-  // cards
-  cardsRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
-  },
+  cardsRow: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md },
   card: {
     flex: 1,
     backgroundColor: colors.surface,
@@ -197,24 +189,10 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  cardValue: {
-    fontSize: typography.sizes.xxl,
-    fontWeight: '800',
-  },
-  cardLabel: {
-    fontSize: typography.sizes.sm,
-    fontWeight: '600',
-    color: colors.text,
-    marginTop: 2,
-  },
-  cardSub: {
-    fontSize: typography.sizes.xs,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 2,
-  },
+  cardValue: { fontSize: typography.sizes.xxl, fontWeight: '800' },
+  cardLabel: { fontSize: typography.sizes.sm, fontWeight: '600', color: colors.text, marginTop: 2 },
+  cardSub:   { fontSize: typography.sizes.xs, color: colors.textSecondary, textAlign: 'center', marginTop: 2 },
 
-  // charts
   chartCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -228,11 +206,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
-  chart: {
-    borderRadius: radius.lg,
-  },
 
-  // table
   tableCard: {
     backgroundColor: colors.surface,
     borderRadius: radius.lg,
@@ -251,7 +225,7 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.borderLight,
   },
-  rowAlt: { backgroundColor: colors.tableRowAlt },
+  rowAlt:      { backgroundColor: colors.tableRowAlt },
   tableHeader: { backgroundColor: colors.primary, borderBottomWidth: 0 },
   headerText: {
     color: colors.white,
@@ -260,7 +234,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     letterSpacing: 0.3,
   },
-  col: { fontSize: typography.sizes.xs },
+  col:       { fontSize: typography.sizes.xs },
   colTipo:   { flex: 1.2 },
   colInsumo: { flex: 1.4 },
   colQtd:    { width: 30, textAlign: 'center' },
@@ -269,4 +243,6 @@ const styles = StyleSheet.create({
   cellText:  { color: colors.text },
   entradaText: { color: colors.accent, fontWeight: '700' },
   saidaText:   { color: colors.danger, fontWeight: '700' },
+  emptyRow:  { padding: spacing.lg, alignItems: 'center' },
+  emptyText: { color: colors.textSecondary, fontSize: typography.sizes.sm, fontStyle: 'italic' },
 });
