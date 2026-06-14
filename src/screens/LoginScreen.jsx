@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -15,11 +15,32 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase/config';
+import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
+  const [email,   setEmail]   = useState('');
+  const [senha,   setSenha]   = useState('');
   const [loading, setLoading] = useState(false);
+
+  const { user, loading: authLoading } = useAuth();
+
+  // If already logged in, skip straight to Insumos
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigation.replace('Insumos');
+    }
+  }, [user, authLoading]);
+
+  // Show spinner while auth state is being resolved (avoids flash)
+  if (authLoading) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const handleEntrar = async () => {
     if (!email.trim() || !senha) {
@@ -33,11 +54,11 @@ export default function LoginScreen({ navigation }) {
       navigation.replace('Insumos');
     } catch (error) {
       const mensagens = {
-        'auth/invalid-email':        'E-mail inválido.',
-        'auth/user-not-found':       'Usuário não encontrado.',
-        'auth/wrong-password':       'Senha incorreta.',
-        'auth/invalid-credential':   'E-mail ou senha incorretos.',
-        'auth/too-many-requests':    'Muitas tentativas. Tente novamente mais tarde.',
+        'auth/invalid-email':          'E-mail inválido.',
+        'auth/user-not-found':         'Usuário não encontrado.',
+        'auth/wrong-password':         'Senha incorreta.',
+        'auth/invalid-credential':     'E-mail ou senha incorretos.',
+        'auth/too-many-requests':      'Muitas tentativas. Tente novamente mais tarde.',
         'auth/network-request-failed': 'Sem conexão com a internet.',
       };
       Alert.alert('Erro ao entrar', mensagens[error.code] ?? 'Erro inesperado. Tente novamente.');
@@ -54,7 +75,6 @@ export default function LoginScreen({ navigation }) {
       >
         <View style={styles.container}>
 
-          {/* Logo */}
           <View style={styles.logoSection}>
             <Image
               source={require('../../assets/logo.webp')}
@@ -63,7 +83,6 @@ export default function LoginScreen({ navigation }) {
             />
           </View>
 
-          {/* Form */}
           <View style={styles.form}>
 
             <View style={styles.fieldGroup}>
@@ -112,11 +131,9 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  flex: { flex: 1 },
+  safe:    { flex: 1, backgroundColor: colors.background },
+  flex:    { flex: 1 },
+  centered:{ flex: 1, justifyContent: 'center', alignItems: 'center' },
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -126,10 +143,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.xl + 8,
   },
-  logo: {
-    width: 300,
-    height: 200,
-  },
+  logo: { width: 300, height: 200 },
   form: {
     backgroundColor: colors.surface,
     borderRadius: radius.xl,
@@ -140,9 +154,7 @@ const styles = StyleSheet.create({
     shadowRadius: 16,
     elevation: 4,
   },
-  fieldGroup: {
-    marginBottom: spacing.md,
-  },
+  fieldGroup:    { marginBottom: spacing.md },
   label: {
     fontSize: typography.sizes.sm,
     fontWeight: '600',
@@ -172,9 +184,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6,
     elevation: 3,
   },
-  buttonDisabled: {
-    opacity: 0.7,
-  },
+  buttonDisabled: { opacity: 0.7 },
   buttonText: {
     color: colors.white,
     fontSize: typography.sizes.md,

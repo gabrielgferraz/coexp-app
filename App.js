@@ -15,6 +15,18 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const Stack = createNativeStackNavigator();
 
+import { AuthProvider } from './src/context/AuthContext';
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <NavigationContainer>
+        {/* your Stack.Navigator here */}
+      </NavigationContainer>
+    </AuthProvider>
+  );
+}
+
 export default function App() {
   return (
     <SafeAreaProvider>
@@ -37,3 +49,4 @@ export default function App() {
     </SafeAreaProvider>  
   );
 }
+
