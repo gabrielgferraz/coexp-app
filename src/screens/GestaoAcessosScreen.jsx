@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   tableRow: {
     flexDirection: 'row', alignItems: 'center',
-    paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm + 2, paddingHorizontal: spacing.sm,
     borderBottomWidth: 1, borderBottomColor: colors.borderLight,
   },
   rowAlt:      { backgroundColor: colors.tableRowAlt },
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   col:     { fontSize: typography.sizes.sm },
   colNome: { flex: 1 },
   colPerm: { width: 80, alignItems: 'center' },
-  colAcao: { width: 36, alignItems: 'center' },
+  colAcao: { width: 52, alignItems: 'center' },
   cellText: { color: colors.text, fontSize: typography.sizes.sm, fontWeight: '500' },
   cellSub:  { color: colors.textSecondary, fontSize: typography.sizes.xs, marginTop: 1 },
   permBadge:      { paddingHorizontal: spacing.xs + 2, paddingVertical: 3, borderRadius: radius.sm },
