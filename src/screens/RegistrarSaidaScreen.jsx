@@ -208,7 +208,6 @@ const styles = StyleSheet.create({
     color: colors.text,
   },
   input: {
-    alignItems: 'center',
     backgroundColor: colors.inputBg,
     borderWidth: 1,
     borderColor: colors.border,
