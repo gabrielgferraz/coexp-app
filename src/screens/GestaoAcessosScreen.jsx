@@ -90,6 +90,7 @@ export default function GestaoAcessosScreen({ navigation }) {
         email:    email.trim(),
         nome:     nome.trim(),
         permissao,
+        aprovado: true, // accounts created by an admin are pre-approved
         criadoEm: new Date(),
       });
 
@@ -135,6 +136,39 @@ export default function GestaoAcessosScreen({ navigation }) {
     );
   };
 
+  const handleAprovar = async (usuario) => {
+    try {
+      await updateDoc(doc(db, 'usuarios', usuario.id), { aprovado: true });
+      setUsuarios(prev =>
+        prev.map(u => u.id === usuario.id ? { ...u, aprovado: true } : u)
+      );
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível aprovar o usuário.');
+    }
+  };
+
+  const handleRecusar = (usuario) => {
+    Alert.alert(
+      'Recusar cadastro',
+      `Recusar e remover o cadastro de "${usuario.nome}"?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Recusar',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, 'usuarios', usuario.id));
+              setUsuarios(prev => prev.filter(u => u.id !== usuario.id));
+            } catch (e) {
+              Alert.alert('Erro', 'Não foi possível recusar o cadastro.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const handleTogglePermissao = async (usuario) => {
     const nova = usuario.permissao === 'Admin' ? 'Padrão' : 'Admin';
     try {
@@ -149,6 +183,9 @@ export default function GestaoAcessosScreen({ navigation }) {
 
   // Render nothing while redirect fires
   if (!isAdmin) return null;
+
+  const pendentes = usuarios.filter(u => u.aprovado === false);
+  const aprovados = usuarios.filter(u => u.aprovado !== false);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -185,6 +222,34 @@ export default function GestaoAcessosScreen({ navigation }) {
           <PrimaryButton title={criando ? 'Criando...' : 'Criar usuário'} onPress={handleCriarUsuario} disabled={criando} />
         </View>
 
+        {pendentes.length > 0 && (
+          <View style={styles.card}>
+            <View style={styles.pendingTitleRow}>
+              <Text style={styles.cardTitle}>Pendências de aprovação</Text>
+              <View style={styles.pendingCount}>
+                <Text style={styles.pendingCountText}>{pendentes.length}</Text>
+              </View>
+            </View>
+
+            {pendentes.map((item) => (
+              <View key={item.id} style={styles.pendingRow}>
+                <View style={styles.pendingInfo}>
+                  <Text style={styles.cellText}>{item.nome}</Text>
+                  <Text style={styles.cellSub}>{item.email}</Text>
+                </View>
+                <View style={styles.pendingActions}>
+                  <TouchableOpacity style={styles.approveBtn} onPress={() => handleAprovar(item)}>
+                    <Text style={styles.approveBtnText}>Aprovar</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.rejectBtn} onPress={() => handleRecusar(item)}>
+                    <Text style={styles.rejectBtnText}>Recusar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
         <View style={styles.tableCard}>
           <View style={[styles.tableRow, styles.tableHeader]}>
             <Text style={[styles.col, styles.colNome, styles.headerText]}>Nome</Text>
@@ -194,10 +259,10 @@ export default function GestaoAcessosScreen({ navigation }) {
 
           {loading ? (
             <View style={styles.emptyRow}><ActivityIndicator color={colors.primary} /></View>
-          ) : usuarios.length === 0 ? (
+          ) : aprovados.length === 0 ? (
             <View style={styles.emptyRow}><Text style={styles.emptyText}>Nenhum usuário cadastrado.</Text></View>
           ) : (
-            usuarios.map((item, idx) => (
+            aprovados.map((item, idx) => (
               <View key={item.id} style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}>
 
                 <View style={[styles.col, styles.colNome]}>
@@ -271,4 +336,29 @@ const styles = StyleSheet.create({
   deleteBtn:      { color: colors.danger, fontSize: 16, fontWeight: '700' },
   emptyRow:       { padding: spacing.lg, alignItems: 'center' },
   emptyText:      { color: colors.textSecondary, fontSize: typography.sizes.sm, fontStyle: 'italic' },
+
+  // Pending approvals
+  pendingTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  pendingCount: {
+    minWidth: 22, height: 22, borderRadius: 11, paddingHorizontal: 6,
+    backgroundColor: colors.warning, alignItems: 'center', justifyContent: 'center',
+  },
+  pendingCountText: { color: colors.white, fontSize: typography.sizes.xs, fontWeight: '700' },
+  pendingRow: {
+    flexDirection: 'row', alignItems: 'center', gap: spacing.sm,
+    paddingVertical: spacing.sm,
+    borderTopWidth: 1, borderTopColor: colors.borderLight,
+  },
+  pendingInfo:    { flex: 1 },
+  pendingActions: { flexDirection: 'row', gap: spacing.xs },
+  approveBtn: {
+    paddingHorizontal: spacing.sm + 2, paddingVertical: spacing.xs + 2,
+    borderRadius: radius.sm, backgroundColor: colors.afirmative,
+  },
+  approveBtnText: { color: colors.white, fontSize: typography.sizes.xs, fontWeight: '700' },
+  rejectBtn: {
+    paddingHorizontal: spacing.sm + 2, paddingVertical: spacing.xs + 2,
+    borderRadius: radius.sm, borderWidth: 1, borderColor: colors.danger,
+  },
+  rejectBtnText: { color: colors.danger, fontSize: typography.sizes.xs, fontWeight: '700' },
 });

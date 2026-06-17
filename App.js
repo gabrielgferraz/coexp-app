@@ -13,6 +13,7 @@ import RegistrarSaidaScreen from './src/screens/RegistrarSaidaScreen';
 import GestaoAcessosScreen  from './src/screens/GestaoAcessosScreen';
 import DashboardScreen      from './src/screens/DashboardScreen';
 import CadastroInsumoScreen from './src/screens/CadastroInsumoScreen';
+import CadastroUsuarioScreen from './src/screens/CadastroUsuarioScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -27,6 +28,7 @@ export default function App() {
             screenOptions={{ headerShown: false }}
           >
             <Stack.Screen name="Login"           component={LoginScreen} />
+            <Stack.Screen name="CadastroUsuario" component={CadastroUsuarioScreen} />
             <Stack.Screen name="Insumos"         component={InsumosScreen} />
             <Stack.Screen name="DetalhesInsumo"  component={DetalhesInsumoScreen} />
             <Stack.Screen name="RegistrarEntrada" component={RegistrarEntradaScreen} />

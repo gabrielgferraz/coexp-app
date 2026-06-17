@@ -34,19 +34,35 @@ export default function CadastroInsumoScreen({ navigation }) {
     if (!unidade)     { Alert.alert('Atenção', 'Selecione a unidade de medida.'); return; }
 
     try {
+      const nomeCadastrado = nome.trim();
+
       await addDoc(collection(db, 'insumos'), {
-        nome: nome.trim(),
+        nome: nomeCadastrado,
         unidade,
         estoqueMinimo,
         qtd: 0,
         criadoEm: new Date()
       });
 
-      setNome('');
-      setUnidade('');
-      setEstoqueMinimo(1);
-
-      Alert.alert('Cadastro feito', `"${nome.trim()}" foi adicionado com sucesso.`);
+      Alert.alert(
+        'Cadastro feito',
+        `"${nomeCadastrado}" foi adicionado com sucesso. Deseja cadastrar mais um insumo?`,
+        [
+          {
+            text: 'Não, voltar',
+            style: 'cancel',
+            onPress: () => navigation.goBack(),
+          },
+          {
+            text: 'Sim, cadastrar mais',
+            onPress: () => {
+              setNome('');
+              setUnidade('');
+              setEstoqueMinimo(1);
+            },
+          },
+        ]
+      );
 
     } catch (error) {
       console.log('Erro Firebase:', error);

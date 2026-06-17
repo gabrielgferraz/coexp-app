@@ -46,8 +46,15 @@ export default function RegistrarSaidaScreen({ navigation }) {
 
     if (!insumo) { Alert.alert('Atenção', 'Selecione um insumo.'); return; }
     if (quantidade <= 0) { Alert.alert('Atenção', 'Informe uma quantidade válida.'); return; }
-    if (quantidade > (insumo.qtd ?? 0)) {
-      Alert.alert('Estoque insuficiente', `Quantidade disponível: ${insumo.qtd ?? 0}`);
+
+    const disponivel = insumo.qtd ?? 0;
+    if (quantidade > disponivel) {
+      Alert.alert(
+        'Estoque insuficiente',
+        `Você não pode remover mais do que existe em estoque.\n\n` +
+        `Disponível: ${disponivel} ${insumo.unidade ?? ''}\n` +
+        `Solicitado: ${quantidade} ${insumo.unidade ?? ''}`
+      );
       return;
     }
 

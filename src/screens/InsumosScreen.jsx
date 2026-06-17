@@ -77,33 +77,30 @@ export default function InsumosScreen({ navigation }) {
 
         <SearchBar value={search} onChangeText={setSearch} />
 
-        {/* Only admins can cadastrar and register movements */}
-        {isAdmin && (
-          <>
-            <TouchableOpacity
-              style={[styles.actionBtn, styles.cadastrar]}
-              onPress={() => navigation.navigate('CadastroInsumo')}
-            >
-              <Text style={styles.btnText}>+ Cadastrar Insumo</Text>
-            </TouchableOpacity>
+        {/* All users can cadastrar and register movements.
+            Only access management (GestaoAcessos) is admin-only. */}
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.cadastrar]}
+          onPress={() => navigation.navigate('CadastroInsumo')}
+        >
+          <Text style={styles.btnText}>+ Cadastrar Insumo</Text>
+        </TouchableOpacity>
 
-            <View style={styles.actionRow}>
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.entrada]}
-                onPress={() => navigation.navigate('RegistrarEntrada')}
-              >
-                <Text style={styles.btnText}>↓ Registrar Entrada</Text>
-              </TouchableOpacity>
+        <View style={styles.actionRow}>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.entrada]}
+            onPress={() => navigation.navigate('RegistrarEntrada')}
+          >
+            <Text style={styles.btnText}>↓ Registrar Entrada</Text>
+          </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.saida]}
-                onPress={() => navigation.navigate('RegistrarSaida')}
-              >
-                <Text style={styles.btnText}>↑ Registrar Saída</Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.saida]}
+            onPress={() => navigation.navigate('RegistrarSaida')}
+          >
+            <Text style={styles.btnText}>↑ Registrar Saída</Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.tableCard}>
           <View style={[styles.row, styles.headerRow]}>

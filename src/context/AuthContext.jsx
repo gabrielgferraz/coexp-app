@@ -31,11 +31,14 @@ export function AuthProvider({ children }) {
     return unsubscribe;
   }, []);
 
-  const isAdmin = perfil?.permissao === 'Admin';
-  const logout  = () => signOut(auth);
+  const isAdmin  = perfil?.permissao === 'Admin';
+  // Approved when a profile exists and isn't explicitly flagged as pending.
+  // Legacy users (no "aprovado" field) are treated as approved.
+  const aprovado = !!perfil && perfil.aprovado !== false;
+  const logout   = () => signOut(auth);
 
   return (
-    <AuthContext.Provider value={{ user, perfil, isAdmin, loading, logout }}>
+    <AuthContext.Provider value={{ user, perfil, isAdmin, aprovado, loading, logout }}>
       {children}
     </AuthContext.Provider>
   );

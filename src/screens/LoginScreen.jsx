@@ -13,8 +13,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import { auth } from '../firebase/config';
+import db from '../firebase/firestore';
 import { useAuth } from '../context/AuthContext';
 
 export default function LoginScreen({ navigation }) {
@@ -22,14 +24,19 @@ export default function LoginScreen({ navigation }) {
   const [senha,   setSenha]   = useState('');
   const [loading, setLoading] = useState(false);
 
-  const { user, loading: authLoading } = useAuth();
+  const { user, aprovado, loading: authLoading, logout } = useAuth();
 
-  // If already logged in, skip straight to Insumos
+  // Handle an already-resolved session (e.g. persisted login on web).
+  // Runs once after auth state finishes resolving on mount.
   useEffect(() => {
-    if (!authLoading && user) {
+    if (authLoading || !user) return;
+    if (aprovado) {
       navigation.replace('Insumos');
+    } else {
+      logout();
+      Alert.alert('Conta pendente', 'Sua conta ainda não foi liberada por um administrador.');
     }
-  }, [user, authLoading]);
+  }, [authLoading]);
 
   // Show spinner while auth state is being resolved (avoids flash)
   if (authLoading) {
@@ -50,7 +57,22 @@ export default function LoginScreen({ navigation }) {
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email.trim(), senha);
+      const credential = await signInWithEmailAndPassword(auth, email.trim(), senha);
+
+      // Block accounts that are still awaiting (or were denied) approval.
+      const snap   = await getDoc(doc(db, 'usuarios', credential.user.uid));
+      const perfil = snap.exists() ? snap.data() : null;
+      const liberado = !!perfil && perfil.aprovado !== false;
+
+      if (!liberado) {
+        await signOut(auth);
+        Alert.alert(
+          'Conta pendente de aprovação',
+          'Sua conta ainda não foi liberada por um administrador. Tente novamente mais tarde.'
+        );
+        return;
+      }
+
       navigation.replace('Insumos');
     } catch (error) {
       const mensagens = {
@@ -123,6 +145,17 @@ export default function LoginScreen({ navigation }) {
               }
             </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.signupLink}
+              onPress={() => navigation.navigate('CadastroUsuario')}
+              activeOpacity={0.7}
+              disabled={loading}
+            >
+              <Text style={styles.signupText}>
+                Não tem conta? <Text style={styles.signupTextBold}>Cadastre-se</Text>
+              </Text>
+            </TouchableOpacity>
+
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -190,5 +223,17 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.md,
     fontWeight: '700',
     letterSpacing: 0.5,
+  },
+  signupLink: {
+    marginTop: spacing.md,
+    alignItems: 'center',
+  },
+  signupText: {
+    fontSize: typography.sizes.sm,
+    color: colors.textSecondary,
+  },
+  signupTextBold: {
+    color: colors.primary,
+    fontWeight: '700',
   },
 });
