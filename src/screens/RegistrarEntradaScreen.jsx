@@ -153,7 +153,7 @@ export default function RegistrarEntradaScreen({ navigation }) {
                 value={responsavel}
                 onChange={setResponsavel}
                 placeholder="Selecione o responsável..."
-                options={usuarios.map(u => ({ label: u.nome, value: u.uid ?? u.id }))}
+                options={usuarios.map(u => ({ label: u.nome, value: u.nome }))}
               />
             </View>
 

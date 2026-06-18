@@ -103,6 +103,7 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
             <Text style={[styles.col, styles.colTipo, styles.headerText]}>Tipo</Text>
             <Text style={[styles.col, styles.colQtd,  styles.headerText]}>Qtd.</Text>
             <Text style={[styles.col, styles.colData,  styles.headerText]}>Data</Text>
+            <Text style={[styles.col, styles.colForn,  styles.headerText]}>Fornecedor</Text>
             <Text style={[styles.col, styles.colResp,  styles.headerText]}>Responsável</Text>
           </View>
 
@@ -123,6 +124,7 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
                 </Text>
                 <Text style={[styles.col, styles.colQtd,  styles.cellText]}>{item.qtd}</Text>
                 <Text style={[styles.col, styles.colData,  styles.cellText]}>{item.data}</Text>
+                <Text style={[styles.col, styles.colForn,  styles.cellText]}>{item.fornecedor || '—'}</Text>
                 <Text style={[styles.col, styles.colResp,  styles.cellText]}>{item.responsavel}</Text>
               </View>
             ))
@@ -231,10 +233,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   col:      { fontSize: typography.sizes.sm },
-  colTipo:  { flex: 1.2 },
-  colQtd:   { width: 36, textAlign: 'center' },
-  colData:  { flex: 1.5, textAlign: 'center' },
-  colResp:  { flex: 1.2, textAlign: 'right' },
+  colTipo:  { flex: 1 },
+  colQtd:   { width: 32, textAlign: 'center' },
+  colData:  { flex: 1, textAlign: 'center' },
+  colForn:  { flex: 1.2, textAlign: 'center' },
+  colResp:  { flex: 1, textAlign: 'right' },
   cellText: { color: colors.text },
   entradaText: { color: colors.accent,  fontWeight: '600' },
   saidaText:   { color: colors.danger,  fontWeight: '600' },
