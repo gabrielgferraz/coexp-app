@@ -8,7 +8,6 @@ import {
   Platform,
   Alert,
   TouchableOpacity,
-  TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
@@ -21,23 +20,27 @@ import db from '../firebase/firestore';
 
 export default function RegistrarSaidaScreen({ navigation }) {
 
-  const [insumos, setInsumos] = useState([]);
+  const [insumos,  setInsumos]  = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
   const [insumoSelecionado, setInsumoSelecionado] = useState('');
   const [quantidade, setQuantidade] = useState(1);
-  const [destino, setDestino] = useState('');
   const [responsavel, setResponsavel] = useState('');
   const [data, setData] = useState(new Date());
 
   useEffect(() => {
-    async function carregarInsumos() {
+    async function carregarDados() {
       try {
-        const snapshot = await getDocs(collection(db, 'insumos'));
-        setInsumos(snapshot.docs.map(d => ({ id: d.id, ...d.data() })));
+        const [snapInsumos, snapUsuarios] = await Promise.all([
+          getDocs(collection(db, 'insumos')),
+          getDocs(collection(db, 'usuarios')),
+        ]);
+        setInsumos(snapInsumos.docs.map(d => ({ id: d.id, ...d.data() })));
+        setUsuarios(snapUsuarios.docs.map(d => ({ id: d.id, ...d.data() })));
       } catch (error) {
-        console.log('Erro carregando insumos:', error);
+        console.log('Erro carregando dados:', error);
       }
     }
-    carregarInsumos();
+    carregarDados();
   }, []);
 
 
@@ -67,7 +70,6 @@ export default function RegistrarSaidaScreen({ navigation }) {
         insumoNome: insumo.nome,
         tipo: 'Saída',
         qtd: quantidade,
-        destino,
         responsavel,
         data: data.toLocaleDateString('pt-BR'),
         criadoEm: new Date()
@@ -75,7 +77,6 @@ export default function RegistrarSaidaScreen({ navigation }) {
 
       setInsumoSelecionado('');
       setQuantidade(1);
-      setDestino('');
       setResponsavel('');
       setData(new Date());
 
@@ -143,22 +144,12 @@ export default function RegistrarSaidaScreen({ navigation }) {
             </View>
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Destino / Setor</Text>
-              <TextInput
-                value={destino}
-                onChangeText={setDestino}
-                placeholder="Nome do setor..."
-                style={styles.input}
-              />
-            </View>
-
-            <View style={styles.fieldGroup}>
               <Text style={styles.label}>Responsável</Text>
-              <TextInput
+              <NativePicker
                 value={responsavel}
-                onChangeText={setResponsavel}
-                placeholder="Nome do responsável..."
-                style={styles.input}
+                onChange={setResponsavel}
+                placeholder="Selecione o responsável..."
+                options={usuarios.map(u => ({ label: u.nome, value: u.uid ?? u.id }))}
               />
             </View>
 
@@ -213,13 +204,5 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     fontSize: typography.sizes.md,
     color: colors.text,
-  },
-  input: {
-    backgroundColor: colors.inputBg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    padding: spacing.md,
-    fontSize: typography.sizes.md,
   },
 });
