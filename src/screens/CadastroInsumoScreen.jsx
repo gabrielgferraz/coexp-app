@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
 import { ScreenHeader, InputField, PrimaryButton, HoldButton } from '../components/UI';
 import NativePicker from '../components/NativePicker';
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, where } from 'firebase/firestore';
 import db from '../firebase/firestore';
 
 
@@ -36,8 +36,18 @@ export default function CadastroInsumoScreen({ navigation }) {
     try {
       const nomeCadastrado = nome.trim();
 
+      // Duplicate name check (case-insensitive via lowercase field)
+      const dupSnap = await getDocs(
+        query(collection(db, 'insumos'), where('nomeLower', '==', nomeCadastrado.toLowerCase()))
+      );
+      if (!dupSnap.empty) {
+        Alert.alert('Nome duplicado', `Já existe um insumo chamado "${nomeCadastrado}".`);
+        return;
+      }
+
       await addDoc(collection(db, 'insumos'), {
         nome: nomeCadastrado,
+        nomeLower: nomeCadastrado.toLowerCase(),
         unidade,
         estoqueMinimo,
         qtd: 0,

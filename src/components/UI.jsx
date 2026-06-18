@@ -24,7 +24,9 @@ export function ScreenHeader({ title, onBack, rightAction }) {
       <Text style={styles.headerTitle}>{title}</Text>
       {rightAction ? (
         <TouchableOpacity onPress={rightAction.onPress} style={styles.headerBtn}>
-          <Text style={styles.headerBtnText}>{rightAction.label}</Text>
+          <Text style={[styles.headerBtnText, rightAction.danger && styles.headerBtnDanger]}>
+            {rightAction.label}
+          </Text>
         </TouchableOpacity>
       ) : (
         <View style={styles.headerBtn} />
@@ -232,6 +234,12 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '300',
     lineHeight: 30,
+  },
+  headerBtnDanger: {
+    color: colors.dangerLight,
+    fontSize: typography.sizes.sm,
+    fontWeight: '700',
+    lineHeight: 18,
   },
 
   // Search

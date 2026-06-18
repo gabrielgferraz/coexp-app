@@ -4,6 +4,8 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
@@ -13,7 +15,9 @@ import {
   collection,
   getDocs,
   query,
-  where
+  where,
+  deleteDoc,
+  doc,
 } from 'firebase/firestore';
 
 import db from '../firebase/firestore';
@@ -67,12 +71,38 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
     carregarMovimentacoes();
   }, [insumo]);
 
+  const handleExcluir = () => {
+    if (movimentacoes.length > 0) {
+      Alert.alert('Exclusão bloqueada', 'Item com movimentações, não é permitido deletar.');
+      return;
+    }
+    Alert.alert(
+      'Excluir insumo',
+      `Deseja remover "${insumo?.nome}" permanentemente?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Excluir',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, 'insumos', insumo.id));
+              navigation.goBack();
+            } catch (e) {
+              Alert.alert('Erro', 'Não foi possível excluir o insumo.');
+            }
+          },
+        },
+      ]
+    );
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScreenHeader
         title={`Detalhes: ${insumo?.nome ?? '—'}`}
         onBack={() => navigation.goBack()}
+        rightAction={{ label: 'Excluir', onPress: handleExcluir, danger: true }}
       />
 
       <ScrollView contentContainerStyle={styles.content}>
