@@ -19,6 +19,7 @@ const PIE_COLORS = ['#1A3A2A', '#4CAF50', '#81C784', '#FF8F00', '#42A5F5'];
 export default function DashboardScreen({ navigation }) {
   const [insumos,       setInsumos]       = useState([]);
   const [movimentacoes, setMovimentacoes] = useState([]);
+  const [usuarios,      setUsuarios]      = useState([]);
   const [loading,       setLoading]       = useState(true);
 
   useFocusEffect(
@@ -26,16 +27,14 @@ export default function DashboardScreen({ navigation }) {
       async function carregar() {
         setLoading(true);
         try {
-          const insSnap = await getDocs(collection(db, 'insumos'));
+          const [insSnap, movSnap, usrSnap] = await Promise.all([
+            getDocs(collection(db, 'insumos')),
+            getDocs(query(collection(db, 'movimentacoes'), orderBy('criadoEm', 'desc'), limit(20))),
+            getDocs(collection(db, 'usuarios')),
+          ]);
           setInsumos(insSnap.docs.map(d => ({ id: d.id, ...d.data() })));
-
-          const movQ = query(
-            collection(db, 'movimentacoes'),
-            orderBy('criadoEm', 'desc'),
-            limit(20)
-          );
-          const movSnap = await getDocs(movQ);
           setMovimentacoes(movSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+          setUsuarios(usrSnap.docs.map(d => ({ id: d.id, ...d.data() })));
         } catch (e) {
           console.log('Erro dashboard:', e);
         } finally {
@@ -52,6 +51,13 @@ export default function DashboardScreen({ navigation }) {
   const estoqueBaixo = insumos.filter(
     i => i.estoqueMinimo != null && (i.qtd ?? 0) < i.estoqueMinimo
   ).length;
+
+  // Map uid → nome for resolving legacy records that stored uid instead of name
+  const uidToNome = usuarios.reduce((acc, u) => {
+    if (u.uid) acc[u.uid] = u.nome;
+    acc[u.id]  = u.nome;
+    return acc;
+  }, {});
 
   const barInsumos = insumos.slice(0, 8);
 
@@ -115,34 +121,40 @@ export default function DashboardScreen({ navigation }) {
         {/* Recent movimentações */}
         <Text style={styles.sectionTitle}>Movimentações Recentes</Text>
         <View style={styles.tableCard}>
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <Text style={[styles.col, styles.colTipo,   styles.headerText]}>Tipo</Text>
-            <Text style={[styles.col, styles.colInsumo, styles.headerText]}>Insumo</Text>
-            <Text style={[styles.col, styles.colQtd,    styles.headerText]}>Qtd</Text>
-            <Text style={[styles.col, styles.colData,   styles.headerText]}>Data</Text>
-            <Text style={[styles.col, styles.colResp,   styles.headerText]}>Resp.</Text>
-          </View>
-
-          {movimentacoes.length === 0 ? (
-            <View style={styles.emptyRow}>
-              <Text style={styles.emptyText}>Nenhuma movimentação registrada.</Text>
-            </View>
-          ) : (
-            movimentacoes.map((item, idx) => (
-              <View key={item.id} style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}>
-                <Text style={[
-                  styles.col, styles.colTipo, styles.cellText,
-                  item.tipo === 'Entrada' ? styles.entradaText : styles.saidaText,
-                ]}>
-                  {item.tipo}
-                </Text>
-                <Text style={[styles.col, styles.colInsumo, styles.cellText]}>{item.insumoNome}</Text>
-                <Text style={[styles.col, styles.colQtd,    styles.cellText]}>{item.qtd}</Text>
-                <Text style={[styles.col, styles.colData,   styles.cellText]}>{item.data}</Text>
-                <Text style={[styles.col, styles.colResp,   styles.cellText]}>{item.responsavel}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View>
+              <View style={[styles.tableRow, styles.tableHeader]}>
+                <Text style={[styles.col, styles.colTipo,   styles.headerText]}>Tipo</Text>
+                <Text style={[styles.col, styles.colInsumo, styles.headerText]}>Insumo</Text>
+                <Text style={[styles.col, styles.colQtd,    styles.headerText]}>Qtd</Text>
+                <Text style={[styles.col, styles.colData,   styles.headerText]}>Data</Text>
+                <Text style={[styles.col, styles.colResp,   styles.headerText]}>Responsável</Text>
               </View>
-            ))
-          )}
+
+              {movimentacoes.length === 0 ? (
+                <View style={styles.emptyRow}>
+                  <Text style={styles.emptyText}>Nenhuma movimentação registrada.</Text>
+                </View>
+              ) : (
+                movimentacoes.map((item, idx) => (
+                  <View key={item.id} style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}>
+                    <Text style={[
+                      styles.col, styles.colTipo, styles.cellText,
+                      item.tipo === 'Entrada' ? styles.entradaText : styles.saidaText,
+                    ]} numberOfLines={1}>
+                      {item.tipo}
+                    </Text>
+                    <Text style={[styles.col, styles.colInsumo, styles.cellText]} numberOfLines={1}>{item.insumoNome}</Text>
+                    <Text style={[styles.col, styles.colQtd,    styles.cellText]} numberOfLines={1}>{item.qtd}</Text>
+                    <Text style={[styles.col, styles.colData,   styles.cellText]} numberOfLines={1}>{item.data}</Text>
+                    <Text style={[styles.col, styles.colResp,   styles.cellText]} numberOfLines={1}>
+                      {uidToNome[item.responsavel] ?? item.responsavel}
+                    </Text>
+                  </View>
+                ))
+              )}
+            </View>
+          </ScrollView>
         </View>
 
       </ScrollView>
@@ -235,11 +247,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   col:       { fontSize: typography.sizes.xs },
-  colTipo:   { flex: 1.2 },
-  colInsumo: { flex: 1.4 },
-  colQtd:    { width: 30, textAlign: 'center' },
-  colData:   { flex: 1.5, textAlign: 'center' },
-  colResp:   { flex: 1.2, textAlign: 'right' },
+  colTipo:   { width: 65 },
+  colInsumo: { width: 105 },
+  colQtd:    { width: 32, textAlign: 'center' },
+  colData:   { width: 78, textAlign: 'center' },
+  colResp:   { width: 110, textAlign: 'right' },
   cellText:  { color: colors.text },
   entradaText: { color: colors.accent, fontWeight: '700' },
   saidaText:   { color: colors.danger, fontWeight: '700' },

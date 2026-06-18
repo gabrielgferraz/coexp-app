@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader, PrimaryButton } from '../components/UI';
+import { ScreenHeader, PrimaryButton, HoldButton } from '../components/UI';
 import NativePicker from '../components/NativePicker';
 import NativeDatePicker from '../components/NativeDatePicker';
 import { collection, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
@@ -117,12 +117,12 @@ export default function RegistrarSaidaScreen({ navigation }) {
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Quantidade</Text>
               <View style={styles.quantidadeRow}>
-                <TouchableOpacity
+                <HoldButton
                   style={styles.qtyBtn}
-                  onPress={() => setQuantidade(q => Math.max(0, q - 1))}
+                  onAction={() => setQuantidade(q => Math.max(0, q - 1))}
                 >
                   <Text style={styles.qtyBtnText}>−</Text>
-                </TouchableOpacity>
+                </HoldButton>
 
                 <TextInput
                   style={styles.qtyInput}
@@ -135,12 +135,12 @@ export default function RegistrarSaidaScreen({ navigation }) {
                   textAlign="center"
                 />
 
-                <TouchableOpacity
+                <HoldButton
                   style={styles.qtyBtn}
-                  onPress={() => setQuantidade(q => q + 1)}
+                  onAction={() => setQuantidade(q => q + 1)}
                 >
                   <Text style={styles.qtyBtnText}>+</Text>
-                </TouchableOpacity>
+                </HoldButton>
               </View>
             </View>
 

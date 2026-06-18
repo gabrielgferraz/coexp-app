@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader, InputField, PrimaryButton } from '../components/UI';
+import { ScreenHeader, InputField, PrimaryButton, HoldButton } from '../components/UI';
 import NativePicker from '../components/NativePicker';
 import { addDoc, collection } from 'firebase/firestore';
 import db from '../firebase/firestore';
@@ -106,12 +106,12 @@ export default function CadastroInsumoScreen({ navigation }) {
             <View style={styles.fieldGroup}>
               <Text style={styles.label}>Estoque mínimo</Text>
               <View style={styles.quantidadeRow}>
-                <TouchableOpacity
+                <HoldButton
                   style={styles.qtyBtn}
-                  onPress={() => setEstoqueMinimo(q => Math.max(0, q - 1))}
+                  onAction={() => setEstoqueMinimo(q => Math.max(0, q - 1))}
                 >
                   <Text style={styles.qtyBtnText}>−</Text>
-                </TouchableOpacity>
+                </HoldButton>
 
                 <TextInput
                   style={styles.qtyInput}
@@ -124,12 +124,12 @@ export default function CadastroInsumoScreen({ navigation }) {
                   textAlign="center"
                 />
 
-                <TouchableOpacity
+                <HoldButton
                   style={styles.qtyBtn}
-                  onPress={() => setEstoqueMinimo(q => q + 1)}
+                  onAction={() => setEstoqueMinimo(q => q + 1)}
                 >
                   <Text style={styles.qtyBtnText}>+</Text>
-                </TouchableOpacity>
+                </HoldButton>
               </View>
             </View>
 

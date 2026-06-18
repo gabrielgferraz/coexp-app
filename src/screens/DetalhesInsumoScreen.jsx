@@ -99,40 +99,45 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
 
         {/* Movimentações */}
         <View style={styles.tableCard}>
-          <View style={[styles.tableRow, styles.tableHeader]}>
-            <Text style={[styles.col, styles.colTipo, styles.headerText]}>Tipo</Text>
-            <Text style={[styles.col, styles.colQtd,  styles.headerText]}>Qtd.</Text>
-            <Text style={[styles.col, styles.colData,  styles.headerText]}>Data</Text>
-            <Text style={[styles.col, styles.colForn,  styles.headerText]}>Fornecedor</Text>
-            <Text style={[styles.col, styles.colResp,  styles.headerText]}>Responsável</Text>
-          </View>
-
-          {movimentacoes.length > 0 ? (
-            movimentacoes.map((item, idx) => (
-              <View
-                key={item.id}
-                style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}
-              >
-                <Text
-                  style={[
-                    styles.col, styles.colTipo, styles.cellText,
-                    item.tipo === 'Entrada' && styles.entradaText,
-                    item.tipo === 'Saída'   && styles.saidaText,
-                  ]}
-                >
-                  {item.tipo}
-                </Text>
-                <Text style={[styles.col, styles.colQtd,  styles.cellText]}>{item.qtd}</Text>
-                <Text style={[styles.col, styles.colData,  styles.cellText]}>{item.data}</Text>
-                <Text style={[styles.col, styles.colForn,  styles.cellText]}>{item.fornecedor || '—'}</Text>
-                <Text style={[styles.col, styles.colResp,  styles.cellText]}>{item.responsavel}</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            <View>
+              <View style={[styles.tableRow, styles.tableHeader]}>
+                <Text style={[styles.col, styles.colTipo, styles.headerText]}>Tipo</Text>
+                <Text style={[styles.col, styles.colQtd,  styles.headerText]}>Qtd.</Text>
+                <Text style={[styles.col, styles.colData,  styles.headerText]}>Data</Text>
+                <Text style={[styles.col, styles.colForn,  styles.headerText]}>Fornecedor</Text>
+                <Text style={[styles.col, styles.colResp,  styles.headerText]}>Responsável</Text>
               </View>
-            ))
-          ) : (
-            <View style={styles.emptyRow}>
-              <Text style={styles.emptyText}>Nenhuma movimentação registrada.</Text>
+
+              {movimentacoes.length > 0 ? (
+                movimentacoes.map((item, idx) => (
+                  <View
+                    key={item.id}
+                    style={[styles.tableRow, idx % 2 === 1 && styles.rowAlt]}
+                  >
+                    <Text
+                      style={[
+                        styles.col, styles.colTipo, styles.cellText,
+                        item.tipo === 'Entrada' && styles.entradaText,
+                        item.tipo === 'Saída'   && styles.saidaText,
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {item.tipo}
+                    </Text>
+                    <Text style={[styles.col, styles.colQtd,  styles.cellText]} numberOfLines={1}>{item.qtd}</Text>
+                    <Text style={[styles.col, styles.colData,  styles.cellText]} numberOfLines={1}>{item.data}</Text>
+                    <Text style={[styles.col, styles.colForn,  styles.cellText]} numberOfLines={1}>{item.fornecedor || '—'}</Text>
+                    <Text style={[styles.col, styles.colResp,  styles.cellText]} numberOfLines={1}>{item.responsavel}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.emptyRow}>
+                  <Text style={styles.emptyText}>Nenhuma movimentação registrada.</Text>
+                </View>
+              )}
             </View>
-          )}
+          </ScrollView>
         </View>
 
       </ScrollView>
@@ -233,11 +238,11 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
   },
   col:      { fontSize: typography.sizes.sm },
-  colTipo:  { flex: 1 },
-  colQtd:   { width: 32, textAlign: 'center' },
-  colData:  { flex: 1, textAlign: 'center' },
-  colForn:  { flex: 1.2, textAlign: 'center' },
-  colResp:  { flex: 1, textAlign: 'right' },
+  colTipo:  { width: 68 },
+  colQtd:   { width: 38, textAlign: 'center' },
+  colData:  { width: 82, textAlign: 'center' },
+  colForn:  { width: 96, textAlign: 'center' },
+  colResp:  { width: 110, textAlign: 'right' },
   cellText: { color: colors.text },
   entradaText: { color: colors.accent,  fontWeight: '600' },
   saidaText:   { color: colors.danger,  fontWeight: '600' },

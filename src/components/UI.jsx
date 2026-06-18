@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -87,6 +87,30 @@ export function NumberInput({ label, value, onIncrement, onDecrement }) {
         </View>
       </View>
     </View>
+  );
+}
+
+// ─── Hold Button (fires immediately, keeps repeating while held) ──────────────
+export function HoldButton({ onAction, style, children }) {
+  const delay    = useRef(null);
+  const interval = useRef(null);
+
+  const start = () => {
+    onAction();
+    delay.current = setTimeout(() => {
+      interval.current = setInterval(onAction, 80);
+    }, 350);
+  };
+
+  const stop = () => {
+    clearTimeout(delay.current);
+    clearInterval(interval.current);
+  };
+
+  return (
+    <TouchableOpacity onPressIn={start} onPressOut={stop} style={style} activeOpacity={0.7}>
+      {children}
+    </TouchableOpacity>
   );
 }
 
