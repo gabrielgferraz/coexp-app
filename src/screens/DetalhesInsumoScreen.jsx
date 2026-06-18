@@ -5,11 +5,13 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, radius, typography } from '../theme';
-import { ScreenHeader } from '../components/UI';
+import { ScreenHeader, HoldButton } from '../components/UI';
+import NativePicker from '../components/NativePicker';
 
 import {
   collection,
@@ -17,14 +19,25 @@ import {
   query,
   where,
   deleteDoc,
+  updateDoc,
   doc,
 } from 'firebase/firestore';
 
 import db from '../firebase/firestore';
 
+const UNIDADES = ['Litros', 'Kg', 'Un', 'Caixas', 'Metros', 'Gramas'];
+const UNIDADE_OPTIONS = UNIDADES.map(u => ({ label: u, value: u }));
+
 export default function DetalhesInsumoScreen({ navigation, route }) {
   const insumo = route.params?.insumo;
   const [movimentacoes, setMovimentacoes] = useState([]);
+  const [editando,  setEditando]  = useState(false);
+  const [salvando,  setSalvando]  = useState(false);
+  const [novoNome,         setNovoNome]         = useState(insumo?.nome ?? '');
+  const [novaUnidade,      setNovaUnidade]      = useState(insumo?.unidade ?? '');
+  const [novoEstoqueMinimo, setNovoEstoqueMinimo] = useState(insumo?.estoqueMinimo ?? 0);
+
+  const temMovimentacoes = movimentacoes.length > 0;
 
   // Compute stock status for circle color
   const qtd = insumo?.qtd ?? 0;
@@ -97,6 +110,42 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
     );
   };
 
+  const handleSalvar = async () => {
+    const nomeFinal = novoNome.trim();
+    if (!nomeFinal)    { Alert.alert('Atenção', 'Informe o nome do insumo.'); return; }
+    if (!novaUnidade)  { Alert.alert('Atenção', 'Selecione a unidade de medida.'); return; }
+
+    setSalvando(true);
+    try {
+      const updates = { estoqueMinimo: novoEstoqueMinimo };
+
+      if (!temMovimentacoes) {
+        // Duplicate name check only if name changed
+        if (nomeFinal.toLowerCase() !== insumo.nome.toLowerCase()) {
+          const dupSnap = await getDocs(
+            query(collection(db, 'insumos'), where('nomeLower', '==', nomeFinal.toLowerCase()))
+          );
+          if (!dupSnap.empty) {
+            Alert.alert('Nome duplicado', `Já existe um insumo chamado "${nomeFinal}".`);
+            return;
+          }
+        }
+        updates.nome      = nomeFinal;
+        updates.nomeLower = nomeFinal.toLowerCase();
+        updates.unidade   = novaUnidade;
+      }
+
+      await updateDoc(doc(db, 'insumos', insumo.id), updates);
+      Alert.alert('Salvo!', 'Insumo atualizado com sucesso.', [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    } catch (e) {
+      Alert.alert('Erro', 'Não foi possível salvar as alterações.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       <ScreenHeader
@@ -126,6 +175,93 @@ export default function DetalhesInsumoScreen({ navigation, route }) {
             </View>
           )}
         </View>
+
+        {/* Edit toggle button */}
+        <TouchableOpacity
+          style={[styles.editToggleBtn, editando && styles.editToggleBtnActive]}
+          onPress={() => setEditando(v => !v)}
+        >
+          <Text style={[styles.editToggleBtnText, editando && styles.editToggleBtnTextActive]}>
+            {editando ? 'Cancelar edição' : '✎  Editar insumo'}
+          </Text>
+        </TouchableOpacity>
+
+        {/* Inline edit form */}
+        {editando && (
+          <View style={styles.editCard}>
+            {temMovimentacoes && (
+              <View style={styles.lockBanner}>
+                <Text style={styles.lockBannerText}>
+                  Nome e unidade bloqueados — item possui movimentações.
+                </Text>
+              </View>
+            )}
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Nome</Text>
+              {temMovimentacoes ? (
+                <View style={styles.lockedField}>
+                  <Text style={styles.lockedText}>{novoNome}</Text>
+                  <Text style={styles.lockIcon}>🔒</Text>
+                </View>
+              ) : (
+                <TextInput
+                  style={styles.input}
+                  value={novoNome}
+                  onChangeText={setNovoNome}
+                  placeholder="Nome do insumo..."
+                />
+              )}
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Unidade de medida</Text>
+              {temMovimentacoes ? (
+                <View style={styles.lockedField}>
+                  <Text style={styles.lockedText}>{novaUnidade}</Text>
+                  <Text style={styles.lockIcon}>🔒</Text>
+                </View>
+              ) : (
+                <NativePicker
+                  value={novaUnidade}
+                  onChange={setNovaUnidade}
+                  placeholder="Selecione a unidade..."
+                  options={UNIDADE_OPTIONS}
+                />
+              )}
+            </View>
+
+            <View style={styles.fieldGroup}>
+              <Text style={styles.label}>Estoque mínimo</Text>
+              <View style={styles.quantidadeRow}>
+                <HoldButton style={styles.qtyBtn} onAction={() => setNovoEstoqueMinimo(q => Math.max(0, q - 1))}>
+                  <Text style={styles.qtyBtnText}>−</Text>
+                </HoldButton>
+                <TextInput
+                  style={styles.qtyInput}
+                  value={String(novoEstoqueMinimo)}
+                  onChangeText={text => {
+                    const parsed = parseInt(text.replace(/[^0-9]/g, ''), 10);
+                    setNovoEstoqueMinimo(isNaN(parsed) ? 0 : parsed);
+                  }}
+                  keyboardType="numeric"
+                  textAlign="center"
+                />
+                <HoldButton style={styles.qtyBtn} onAction={() => setNovoEstoqueMinimo(q => q + 1)}>
+                  <Text style={styles.qtyBtnText}>+</Text>
+                </HoldButton>
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveBtn, salvando && { opacity: 0.7 }]}
+              onPress={handleSalvar}
+              disabled={salvando}
+            >
+              <Text style={styles.saveBtnText}>{salvando ? 'Salvando...' : 'Salvar alterações'}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Movimentações */}
         <View style={styles.tableCard}>
@@ -283,4 +419,100 @@ const styles = StyleSheet.create({
     fontSize: typography.sizes.sm,
     fontStyle: 'italic',
   },
+
+  // Edit toggle
+  editToggleBtn: {
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.sm,
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface,
+  },
+  editToggleBtnActive: {
+    borderColor: colors.textSecondary,
+    backgroundColor: colors.tableRowAlt,
+  },
+  editToggleBtnText: {
+    color: colors.primary,
+    fontWeight: '600',
+    fontSize: typography.sizes.sm,
+  },
+  editToggleBtnTextActive: {
+    color: colors.textSecondary,
+  },
+
+  // Edit card
+  editCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.md,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  lockBanner: {
+    backgroundColor: colors.tableRowAlt,
+    borderRadius: radius.md,
+    padding: spacing.sm,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+  },
+  lockBannerText: {
+    fontSize: typography.sizes.xs,
+    color: colors.warning,
+    fontWeight: '600',
+  },
+  fieldGroup: { gap: spacing.xs },
+  label: { fontSize: typography.sizes.sm, fontWeight: '600', color: colors.text },
+  input: {
+    backgroundColor: colors.inputBg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    fontSize: typography.sizes.md,
+    color: colors.text,
+  },
+  lockedField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.tableRowAlt,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    gap: spacing.sm,
+  },
+  lockedText: { flex: 1, fontSize: typography.sizes.md, color: colors.textSecondary },
+  lockIcon:   { fontSize: 14 },
+  quantidadeRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  qtyBtn: {
+    width: 44, height: 44, borderRadius: radius.md,
+    backgroundColor: colors.inputBg, borderWidth: 1, borderColor: colors.border,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  qtyBtnText: { fontSize: 22, color: colors.text, lineHeight: 26 },
+  qtyInput: {
+    flex: 1, height: 44, backgroundColor: colors.inputBg,
+    borderWidth: 1, borderColor: colors.border, borderRadius: radius.md,
+    fontSize: typography.sizes.md, color: colors.text,
+  },
+  saveBtn: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+    alignItems: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 3,
+  },
+  saveBtnText: { color: colors.white, fontWeight: '700', fontSize: typography.sizes.md },
 });
