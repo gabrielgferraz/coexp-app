@@ -23,7 +23,11 @@ export function ScreenHeader({ title, onBack, rightAction }) {
       )}
       <Text style={styles.headerTitle}>{title}</Text>
       {rightAction ? (
-        <TouchableOpacity onPress={rightAction.onPress} style={styles.headerBtnRight}>
+        <TouchableOpacity
+          onPress={rightAction.onPress}
+          style={[styles.headerBtnRight, rightAction.danger && styles.headerBtnRightDanger]}
+          activeOpacity={0.75}
+        >
           <Text style={[styles.headerBtnText, rightAction.danger && styles.headerBtnDanger]}>
             {rightAction.label}
           </Text>
@@ -231,10 +235,17 @@ const styles = StyleSheet.create({
   },
   headerBtnRight: {
     minWidth: 36,
-    height: 36,
-    paddingHorizontal: spacing.xs,
+    height: 30,
+    paddingHorizontal: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.full,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.5)',
+  },
+  headerBtnRightDanger: {
+    borderColor: colors.dangerLight,
+    backgroundColor: 'rgba(198,40,40,0.18)',
   },
   headerBtnText: {
     color: colors.white,
@@ -246,7 +257,7 @@ const styles = StyleSheet.create({
     color: colors.dangerLight,
     fontSize: typography.sizes.sm,
     fontWeight: '700',
-    lineHeight: 18,
+    lineHeight: typography.sizes.sm + 2,
   },
 
   // Search
